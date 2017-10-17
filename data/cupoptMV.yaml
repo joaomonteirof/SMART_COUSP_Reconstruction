@@ -1,0 +1,13 @@
+# IMPORTANT SHIFT PARAMETERS
+# MAKE SURE MEASUREMENT IMAGE MATCHES NON-STREAKING IMAGES
+streakShift1: [0, 0]
+streakShift2: [0, 0]
+streakShift3: [0, 0]
+streakShift4: [0, 0]
+
+# input files
+video_samples_file: "bouncing_balls_testing_data.mat"
+output_file_name: "input_samples.mat"
+t1to2File: "t1to2.txt"
+t1to3File: "t1to3.txt"
+t1to4File: "t1to4.txt"
