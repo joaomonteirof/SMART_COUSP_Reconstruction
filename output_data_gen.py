@@ -127,14 +127,14 @@ def ar(x,y,z):
 		
 if __name__ == "__main__":
 
-	# Training settings
+	# Data settings
 	parser = argparse.ArgumentParser(description='Generate Bouncing balls dataset')
 	parser.add_argument('--im-size', type=int, default=32, metavar='N', help='H and W of frames (default: 32)')
 	parser.add_argument('--n-balls', type=int, default=3, metavar='N', help='Number of bouncing balls (default: 3)')
 	parser.add_argument('--n-frames', type=int, default=128, metavar='N', help='Number of frames per sample (default: 128)')
 	parser.add_argument('--n-samples', type=int, default=500, metavar='N', help='Number of output samples (default: 500)')
-	parser.add_argument('--output-path', type=str, default='./', metavar='Path', help='Path for checkpointing')
-	parser.add_argument('--file-name', type=str, default='train.mat', metavar='Path', help='Path to data')
+	parser.add_argument('--output-path', type=str, default='./', metavar='Path', help='Path for output')
+	parser.add_argument('--file-name', type=str, default='train.mat', metavar='Path', help='Output file name')
 	args = parser.parse_args()
 
 	dat=empty((args.n_samples), dtype=object)
