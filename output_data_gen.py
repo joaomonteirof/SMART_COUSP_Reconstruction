@@ -140,6 +140,7 @@ if __name__ == "__main__":
 	dat=empty((args.n_samples), dtype=object)
 	for i in range(args.n_samples):
 		dat[i]=bounce_mat(res=args.im_size, n=args.n_balls, T=args.n_frames)
+		print(dat[i].shape)
 
 	data={}
 	data['Data']=dat
