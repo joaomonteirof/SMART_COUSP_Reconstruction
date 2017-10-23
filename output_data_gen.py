@@ -8,7 +8,8 @@ from numpy import *
 from scipy import *			   
 import argparse
 import pickle
-import scipy.io
+import h5py
+import numpy as np
 
 import matplotlib
 matplotlib.use('Agg')
@@ -134,14 +135,16 @@ if __name__ == "__main__":
 	parser.add_argument('--n-frames', type=int, default=128, metavar='N', help='Number of frames per sample (default: 128)')
 	parser.add_argument('--n-samples', type=int, default=500, metavar='N', help='Number of output samples (default: 500)')
 	parser.add_argument('--output-path', type=str, default='./', metavar='Path', help='Path for output')
-	parser.add_argument('--file-name', type=str, default='train.mat', metavar='Path', help='Output file name')
+	parser.add_argument('--file-name', type=str, default='train.hdf', metavar='Path', help='Output file name')
 	args = parser.parse_args()
 
-	dat=empty((args.n_samples), dtype=object)
+	dat=[]
 	for i in range(args.n_samples):
-		dat[i]=bounce_mat(res=args.im_size, n=args.n_balls, T=args.n_frames)
+		sample=bounce_mat(res=args.im_size, n=args.n_balls, T=args.n_frames)
+		dat.append( sample.reshape([sample.shape[1],sample.shape[2],sample.shape[0]]) )
 		print(dat[i].shape)
+		print(i)
 
-	data={}
-	data['Data']=dat
-	scipy.io.savemat(args.output_path+args.file_name,data)
+	hdf5 = h5py.File(args.output_path+args.file_name, 'w')
+	dataset = hdf5.create_dataset('data', data=np.asarray(dat))
+	hdf5.close()

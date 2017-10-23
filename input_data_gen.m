@@ -12,20 +12,21 @@ disp(dataFolder);
 opts = loadCupOptionsMV(dataFolder);
 
 %% Load bouncing balls data
-load(opts.video_samples_file);
+hinfo = hdf5info(opts.video_samples_file);
+Data = hdf5read(hinfo.GroupHierarchy.Groups(1).Datasets(1));
 
 %% Set N: Frames dim1, Nx: Frames dim2, Nt: #frames, Np: ... 
-N = size(Data{1},1);
-Nx = size(Data{1},2);
-Nt = size(Data{1},3);
+N = size(Data(1,:,:,:),2);
+Nx = size(Data(1,:,:,:),3);
+Nt = size(Data(1,:,:,:),4);
 Np = 20;
 
 %% Loop over video samples to generate list of streak images and patterns
 streakImages = {};
 Patterns = {};
 
-for i=1:numel(Data)
-    target3D = Data{i};
+for i=1:size(Data,1)
+    target3D = squeeze( Data(i,:,:,:) );
     target3Dreverse = flip(target3D,2);
     target3DBig = zeros(N,4*Nx,Nt);
     target3DBig(:,1:Nx,:) = target3D;
@@ -144,4 +145,4 @@ for k=1:numel(streakImages)
 end
 
 %% Save y
-save(opts.output_file_name,y);
+h5write(opts.output_file_name,'input_samples',y);

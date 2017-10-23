@@ -17,7 +17,7 @@ class Loader(Dataset):
 
 		print(a.shape)
 			
-		return torch.from_numpy(in_data['Data'][0][index]).float(), torch.from_numpy(in_data['Data'][0][index]).float()
+		return torch.from_numpy(in_data['Data'][0][index]).float(), torch.from_numpy(out_data['Data'][0][index]).float()
 
 	def __len__(self):
 		in_data = scipy.io.loadmat(self.in_file)
