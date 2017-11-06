@@ -9,16 +9,19 @@ class Loader(Dataset):
 		super(Loader, self).__init__()
 		self.in_file = input_file
 		self.out_file = output_file
-		
+
 	def __getitem__(self, index):
+		in_file = h5py.File(self.in_file, 'r')
+		in_samples = in_file['input_samples'][:,:,:,index]
+		in_samples = in_samples.reshape([in_samples.shape[2], in_samples.shape[1], in_samples.shape[0]])
+		in_file.close()
 
-		in_data = scipy.io.loadmat(self.in_file)
-		out_data = scipy.io.loadmat(self.out_file)
+		out_file = h5py.File(self.out_file, 'r')
+		out_samples = out_file['data'][index]
+		out_file.close()
 
-		print(a.shape)
-			
-		return torch.from_numpy(in_data['Data'][0][index]).float(), torch.from_numpy(out_data['Data'][0][index]).float()
+		return torch.from_numpy(in_samples).float(), torch.from_numpy(out_samples).float()
 
 	def __len__(self):
-		in_data = scipy.io.loadmat(self.in_file)
-		return len(in_data['Data'][0])
+		open_file = h5py.File(self.out_file, 'r')
+		return open_file['data'].shape[0]

@@ -13,7 +13,8 @@ opts = loadCupOptionsMV(dataFolder);
 
 %% Load bouncing balls data
 hinfo = hdf5info(opts.video_samples_file);
-Data = hdf5read(hinfo.GroupHierarchy.Groups(1).Datasets(1));
+Data = hdf5read(hinfo.GroupHierarchy.Datasets(1));
+Data=reshape(Data,[size(Data,4), size(Data,2), size(Data,3), size(Data,1)]);
 
 %% Set N: Frames dim1, Nx: Frames dim2, Nt: #frames, Np: ... 
 N = size(Data(1,:,:,:),2);
@@ -23,7 +24,7 @@ Np = 20;
 
 %% Loop over video samples to generate list of streak images and patterns
 streakImages = {};
-Patterns = {};
+patterns = {};
 
 for i=1:size(Data,1)
     target3D = squeeze( Data(i,:,:,:) );
@@ -84,7 +85,7 @@ for k=1:numel(streakImages)
     %% Read images based on options
     % pattern image
     imgs = struct();
-    patternRaw = Patterns{k};
+    patternRaw = patterns{k};
     yStreak = streakImages{k};
     yStreak = removeBackgroundAndNormalizeEnergy(yStreak);
     [height, width] = size(patternRaw);
@@ -140,9 +141,16 @@ for k=1:numel(streakImages)
 
 
     %% Build y variable
-    y{k} = [imgs.y1; imgs.y2; imgs.y3; imgs.y4;];
+    y{k} = [imgs.y1' imgs.y2' imgs.y3' imgs.y4'];
     
 end
 
+y = cat(3,y{:});
+y = reshape(y,[size(y,3),1,size(y,1),size(y,2)]);
+mean_y = mean(reshape(y,[numel(y),1]));
+std_y = std(reshape(y,[numel(y),1]));
+y = (y-mean_y)/std_y;
+
 %% Save y
-h5write(opts.output_file_name,'input_samples',y);
+h5create(opts.output_file_name,'/input_samples',size(y))
+h5write(opts.output_file_name,'/input_samples',y);

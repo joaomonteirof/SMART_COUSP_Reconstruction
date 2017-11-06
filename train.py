@@ -26,8 +26,8 @@ parser.add_argument('--n_workers', type=int, default=1)
 args = parser.parse_args()
 args.cuda = True if args.ngpus>0 and torch.cuda.is_available() else False
 
-train_data_set = Loader(input_file=args.input_data_path+'input_train.mat', output_file=args.output_data_path+'output_train.mat')
-valid_data_set = Loader(input_file=args.input_data_path+'input_valid.mat', output_file=args.output_data_path+'output_valid.mat')
+train_data_set = Loader(input_file=args.input_data_path+'input_train.hdf', output_file=args.targets_data_path+'output_train.hdf')
+valid_data_set = Loader(input_file=args.input_data_path+'input_valid.hdf', output_file=args.targets_data_path+'output_valid.hdf')
 
 train_loader = DataLoader(train_data_set, batch_size=args.batch_size, shuffle=False, num_workers=args.n_workers)
 valid_loader = DataLoader(valid_data_set, batch_size=args.valid_batch_size, shuffle=False, num_workers=args.n_workers)
@@ -36,7 +36,7 @@ torch.manual_seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
-model = models_zoo.model()
+model = models_zoo.model(args.cuda)
 
 if args.ngpus > 1:
 	model = torch.nn.DataParallel(model, device_ids=list(range(args.ngpus)))

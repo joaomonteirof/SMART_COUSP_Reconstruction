@@ -96,11 +96,13 @@ class TrainLoop(object):
 
 		out = self.model.forward(x)
 
-		loss = torch.nn.functional.MSELoss(out,y)
+		loss = torch.nn.functional.mse_loss(out,y)
 
 		self.optimizer.zero_grad()
 		loss.backward()
 		self.optimizer.step()
+
+		self.print_grad_norms()
 
 		return loss.data[0]
 
