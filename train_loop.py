@@ -66,8 +66,9 @@ class TrainLoop(object):
 
 			self.cur_epoch += 1
 
+			self.checkpointing()
+
 			if valid_loss < self.last_best_val_loss:
-				self.checkpointing()
 				self.its_without_improv = 0
 				self.last_best_val_loss = valid_loss
 			else:
@@ -102,7 +103,7 @@ class TrainLoop(object):
 		loss.backward()
 		self.optimizer.step()
 
-		self.print_grad_norms()
+		#self.print_grad_norms()
 
 		return loss.data[0]
 
@@ -123,7 +124,7 @@ class TrainLoop(object):
 
 		out = self.model.forward(x)
 
-		loss = torch.nn.functional.MSELoss(out,y)
+		loss = torch.nn.functional.mse_loss(out,y)
 
 		return loss.data[0]
 

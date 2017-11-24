@@ -1,6 +1,6 @@
 function [y] = removeBackgroundAndNormalize(x, blockSize)
     if nargin < 2
-        blockSize = 50;
+        blockSize = 20;
     end
     y = double(x);
     bkgPatch = y(1:blockSize, 1:blockSize);
