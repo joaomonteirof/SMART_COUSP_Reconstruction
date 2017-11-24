@@ -37,20 +37,32 @@ class model(nn.Module):
 			nn.BatchNorm2d(40),
 			nn.ReLU() )
 
-		self.lstm = nn.LSTM(30*30, 30*30, 2, bidirectional=False, batch_first=True)
+		self.lstm = nn.LSTM(30*30, 30*30, 2, bidirectional=True, batch_first=True)
+
+		self.fc = nn.Linear(30*30*2,30*30)
 
 
 	def forward(self, x):
 		x = self.features(x)
 		x = x.view(x.size(0), x.size(1), -1)
 
-		h0 = Variable(torch.zeros(2, x.size(0), 30*30))
-		c0 = Variable(torch.zeros(2, x.size(0), 30*30))
+		h0 = Variable(torch.zeros(2*2, x.size(0), 30*30))
+		c0 = Variable(torch.zeros(2*2, x.size(0), 30*30))
 
 		if self.cuda_mode:
 			h0 = h0.cuda()
 			c0 = c0.cuda()
 
-		x = self.lstm(x, (h0, c0))
+		x, _ = self.lstm(x, (h0, c0))
 
-		return x[0]
+		out = []
+
+		for i in range(x.size(1)):
+
+			out.append(F.sigmoid(self.fc(x[:,i,:])))
+
+		out = torch.stack(out)
+
+		out.view(out.size(1), out.size(0), -1)
+
+		return out
