@@ -37,23 +37,27 @@ class model(nn.Module):
 			nn.BatchNorm2d(40),
 			nn.ReLU() )
 
-		self.lstm = nn.LSTM(30*30, 30*30, 2, bidirectional=True, batch_first=True)
+		self.lstm_1 = nn.LSTM(30*30, 30*15, 1, bidirectional=True, batch_first=True)
 
-		self.fc = nn.Linear(30*30*2,30*30)
+		self.lstm_2 = nn.LSTM(30*30, 30*15, 1, bidirectional=True, batch_first=True)
+
+		self.fc = nn.Linear(30*30,30*30)
 
 
 	def forward(self, x):
 		x = self.features(x)
 		x = x.view(x.size(0), x.size(1), -1)
 
-		h0 = Variable(torch.zeros(2*2, x.size(0), 30*30))
-		c0 = Variable(torch.zeros(2*2, x.size(0), 30*30))
+		h0 = Variable(torch.zeros(2, x.size(0), 30*15))
+		c0 = Variable(torch.zeros(2, x.size(0), 30*15))
 
 		if self.cuda_mode:
 			h0 = h0.cuda()
 			c0 = c0.cuda()
 
-		x, _ = self.lstm(x, (h0, c0))
+		x, h_c = self.lstm_1(x, (h0, c0))
+
+		x, _ = self.lstm_2(x, h_c)
 
 		out = []
 
