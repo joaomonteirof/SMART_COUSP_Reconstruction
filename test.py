@@ -33,7 +33,7 @@ def test_model(model, data_loader, n_tests, cuda_mode):
 		sample_rec = model.forward(sample_in)
 
 		save_gif(sample_out, str(i+1)+'_real.gif')
-		save_gif(sample_rec.data[0].view([sample_out.size(0), sample_out.size(1), sample_out.size(2)]), str(i+1)+'_rec.gif')
+		save_gif(sample_rec.data[:,0,:].view([sample_out.size(0), sample_out.size(1), sample_out.size(2)]), str(i+1)+'_rec.gif')
 
 def save_gif(data, file_name):
 
