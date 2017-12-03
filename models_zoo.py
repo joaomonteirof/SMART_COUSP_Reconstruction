@@ -67,6 +67,6 @@ class model(nn.Module):
 
 		out = torch.stack(out)
 
-		out.view(out.size(1), out.size(0), -1)
+		out = out.view(out.size(1), out.size(0), -1)
 
 		return out

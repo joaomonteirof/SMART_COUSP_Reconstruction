@@ -83,7 +83,6 @@ class TrainLoop(object):
 
 		self.model.train()
 
-		## Expects flattened y
 		x, y = batch
 
 		y = y.view(y.size(0), y.size(3), y.size(1)*y.size(2))
@@ -103,7 +102,7 @@ class TrainLoop(object):
 		loss.backward()
 		self.optimizer.step()
 
-		#self.print_grad_norms()
+		self.print_grad_norms()
 
 		return loss.data[0]
 
