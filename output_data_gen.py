@@ -44,8 +44,9 @@ SIZE=10
 # size of bounding box: SIZE X SIZE.
 
 def bounce_n(T=128, n=2, r=None, m=None):
-	if r==None: r=array([1.2]*n)
-	if m==None: m=array([1]*n)
+
+	if r is None: r=array([1.2]*n)
+	if m is None: m=array([1]*n)
 	# r is to be rather small.
 	X=zeros((T, n, 2), dtype='float')
 	v = randn(n,2)
@@ -104,7 +105,7 @@ def bounce_n(T=128, n=2, r=None, m=None):
 def matricize(X,res,r=None):
 
 	T, n= shape(X)[0:2]
-	if r==None: r=array([1.2]*n)
+	if r is None: r=array([1.2]*n)
 
 	A=zeros((T,res,res), dtype='float')
 	

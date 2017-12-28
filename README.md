@@ -1,1 +1,1 @@
-## MNIST Reconstruction
+## Bouncing Balls Reconstruction

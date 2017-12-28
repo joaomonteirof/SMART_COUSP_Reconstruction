@@ -9,47 +9,48 @@ class model(nn.Module):
 
 		self.cuda_mode = cuda_mode
 
-		## Considering (30,90) inputs
+		## Considering (30, 90) inputs
 
 		self.features = nn.Sequential(
-			nn.Conv2d(1, 16, kernel_size=(3,11), padding=1, stride=(1,2)),
+			nn.Conv2d(1, 16, kernel_size=(3,11), padding=1, stride=(1,2), bias=False),
 			nn.BatchNorm2d(16),
 			nn.ReLU(),
-			nn.Conv2d(16, 32, kernel_size=(3,9), padding=1, stride=(2,2)),
+			nn.Conv2d(16, 32, kernel_size=(3,9), padding=1, stride=(2,2), bias=False),
 			nn.BatchNorm2d(32),
 			nn.ReLU(),
-			nn.Conv2d(32, 64, kernel_size=(3,5), padding=1, stride=(2,2)),
+			nn.Conv2d(32, 64, kernel_size=(3,5), padding=1, stride=(2,2), bias=False),
 			nn.BatchNorm2d(64),
 			nn.ReLU(),
-			nn.Conv2d(64, 128, kernel_size=(3,3), padding=1, stride=(1,1)),
+			nn.ConvTranspose2d(64, 128, kernel_size=5, padding=2, stride=2, bias=False),
 			nn.BatchNorm2d(128),
 			nn.ReLU(),
-			nn.ConvTranspose2d(128, 128, kernel_size=5, padding=2, stride=2),
-			nn.BatchNorm2d(128),
-			nn.ReLU(),
-			nn.ConvTranspose2d(128, 96, kernel_size=5, padding=2, output_padding=1, stride=2),
+			nn.ConvTranspose2d(128, 96, kernel_size=5, padding=2, output_padding=1, stride=2, bias=False),
 			nn.BatchNorm2d(96),
 			nn.ReLU(),
-			nn.ConvTranspose2d(96, 64, kernel_size=3, padding=1, stride=1),
+			nn.ConvTranspose2d(96, 64, kernel_size=3, padding=1, stride=1, bias=False),
 			nn.BatchNorm2d(64),
 			nn.ReLU(),
-			nn.ConvTranspose2d(64, 40, kernel_size=3, padding=1, stride=1),
+			nn.ConvTranspose2d(64, 40, kernel_size=3, padding=1, stride=1, bias=False),
 			nn.BatchNorm2d(40),
 			nn.ReLU() )
 
-		self.lstm_1 = nn.LSTM(30*30, 30*15, 1, bidirectional=True, batch_first=True)
+		self.lstm_1 = nn.LSTM(30*30, 30*30, 1, bidirectional=True, batch_first=False)
 
-		self.lstm_2 = nn.LSTM(30*30, 30*15, 1, bidirectional=True, batch_first=True)
+		self.lstm_2 = nn.LSTM(2*30*30, 30*30, 1, bidirectional=True, batch_first=False)
 
-		self.fc = nn.Linear(30*30,30*30)
+		self.fc = nn.Linear(2*30*30,30*30)
 
 
 	def forward(self, x):
 		x = self.features(x)
-		x = x.view(x.size(0), x.size(1), -1)
 
-		h0 = Variable(torch.zeros(2, x.size(0), 30*15))
-		c0 = Variable(torch.zeros(2, x.size(0), 30*15))
+		x = x.view(x.size(1), x.size(0), -1)
+
+		batch_size = x.size(1)
+		seq_size = x.size(0)
+
+		h0 = Variable(torch.zeros(2, batch_size, 30*30))
+		c0 = Variable(torch.zeros(2, batch_size, 30*30))
 
 		if self.cuda_mode:
 			h0 = h0.cuda()
@@ -59,14 +60,22 @@ class model(nn.Module):
 
 		x, _ = self.lstm_2(x, h_c)
 
+		x = F.relu( self.fc( x.view(batch_size*seq_size, -1) ) )
+
+		return x.view(batch_size, seq_size, -1)
+
+		'''
+
 		out = []
 
 		for i in range(x.size(1)):
 
-			out.append(F.sigmoid(self.fc(x[:,i,:])))
+			out.append(F.relu(self.fc(x[:,i,:])))
 
 		out = torch.stack(out)
 
 		out = out.view(out.size(1), out.size(0), -1)
 
 		return out
+
+		'''

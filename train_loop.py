@@ -1,5 +1,6 @@
 import torch
 from torch.autograd import Variable
+import torch.nn.init as init
 
 import numpy as np
 import pickle
@@ -32,8 +33,10 @@ class TrainLoop(object):
 		self.last_best_val_loss = float('inf')
 
 		if checkpoint_epoch is not None:
-
 			self.load_checkpoint(self.save_epoch_fmt.format(checkpoint_epoch))
+		else:
+			#self.initialize_params()
+			pass
 
 	def train(self, n_epochs=1, patience = 5):
 
@@ -102,7 +105,8 @@ class TrainLoop(object):
 		loss.backward()
 		self.optimizer.step()
 
-		self.print_grad_norms()
+		#self.print_grad_norms()
+		#self.print_params_norms()
 
 		return loss.data[0]
 
@@ -171,3 +175,12 @@ class TrainLoop(object):
 		for params in list(self.model.parameters()):
 			norm+=params.grad.norm(2).data[0]
 		print('Sum of grads norms: {}'.format(norm))
+
+	def initialize_params(self):
+		for layer in self.model.modules():
+			if isinstance(layer, nn.Conv2d):
+				n = layer.kernel_size[0] * layer.kernel_size[1] * layer.out_channels
+				layer.weight.data.normal_(0, math.sqrt(2. / n))
+			elif isinstance(layer, nn.BatchNorm2d):
+				layer.weight.data.fill_(1)
+				layer.bias.data.zero_()
