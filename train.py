@@ -36,7 +36,8 @@ torch.manual_seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
-model = models_zoo.model(args.cuda)
+#model = models_zoo.model(args.cuda)
+model = models_zoo.small_model(args.cuda)
 
 if args.ngpus > 1:
 	model = torch.nn.DataParallel(model, device_ids=list(range(args.ngpus)))

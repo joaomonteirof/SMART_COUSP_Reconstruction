@@ -79,3 +79,68 @@ class model(nn.Module):
 		return out
 
 		'''
+
+class small_model(nn.Module):
+	def __init__(self, cuda_mode):
+		super(small_model, self).__init__()
+
+		self.cuda_mode = cuda_mode
+
+		## Considering (30, 90) inputs
+
+		self.features = nn.Sequential(
+			nn.Conv2d(1, 16, kernel_size=(3,7), padding=(1,0), stride=(1,2), bias=False),
+			nn.BatchNorm2d(16),
+			nn.ReLU(),
+			nn.Conv2d(16, 32, kernel_size=(3,7), padding=(1,0), stride=(1,1), bias=False),
+			nn.BatchNorm2d(32),
+			nn.ReLU(),
+			nn.Conv2d(32, 40, kernel_size=(3,7), padding=(1,0), stride=(1,1), bias=False),
+			nn.BatchNorm2d(40),
+			nn.ReLU() )
+
+		self.lstm_1 = nn.LSTM(30*30, 30*30, 1, bidirectional=True, batch_first=False)
+
+		self.lstm_2 = nn.LSTM(2*30*30, 30*30, 1, bidirectional=True, batch_first=False)
+
+		self.fc = nn.Linear(2*30*30,30*30)
+
+
+	def forward(self, x):
+		x = self.features(x)
+
+		x = x.view(x.size(1), x.size(0), -1)
+
+		batch_size = x.size(1)
+		seq_size = x.size(0)
+
+		h0 = Variable(torch.zeros(2, batch_size, 30*30))
+		c0 = Variable(torch.zeros(2, batch_size, 30*30))
+
+		if self.cuda_mode:
+			h0 = h0.cuda()
+			c0 = c0.cuda()
+
+		x, h_c = self.lstm_1(x, (h0, c0))
+
+		x, _ = self.lstm_2(x, h_c)
+
+		x = F.relu( self.fc( x.view(batch_size*seq_size, -1) ) )
+
+		return x.view(batch_size, seq_size, -1)
+
+		'''
+
+		out = []
+
+		for i in range(x.size(1)):
+
+			out.append(F.relu(self.fc(x[:,i,:])))
+
+		out = torch.stack(out)
+
+		out = out.view(out.size(1), out.size(0), -1)
+
+		return out
+
+		'''
