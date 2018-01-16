@@ -129,18 +129,30 @@ class small_model(nn.Module):
 
 		return x.view(batch_size, seq_size, -1)
 
-		'''
+class discriminator(nn.Module):
+	def __init__(self):
+		super(discriminator, self).__init__()
 
-		out = []
+		self.features = nn.Sequential(
+			nn.Conv2d(40, 64, kernel_size=3, padding=1, stride=2, bias=False),
+			nn.BatchNorm2d(64),
+			nn.LeakyReLU(0.1),
+			nn.Conv2d(64, 128, kernel_size=3, padding=1, stride=2, bias=False),
+			nn.BatchNorm2d(128),
+			nn.LeakyReLU(0.1),
+			nn.Conv2d(128, 128, kernel_size=3, padding=1, stride=2, bias=False),
+			nn.BatchNorm2d(128),
+			nn.LeakyReLU(0.1) )
 
-		for i in range(x.size(1)):
+		self.fc = nn.Linear(128*4*4, 1)
 
-			out.append(F.relu(self.fc(x[:,i,:])))
+	def forward(self, x):
 
-		out = torch.stack(out)
+		## Considering (40, 30, 30) inputs
 
-		out = out.view(out.size(1), out.size(0), -1)
+		x = x.view(x.size(0), 40, 30, 30)
 
-		return out
+		x = self.features(x)
+		x = self.fc(x)
 
-		'''
+		return F.sigmoid(x)

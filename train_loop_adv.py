@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 class TrainLoop(object):
 
-	def __init__(self, model, optimizer, train_loader, valid_loader, checkpoint_path=None, checkpoint_epoch=None, cuda=True):
+	def __init__(self, model, discriminator, optimizer, optimizer_d, train_loader, valid_loader, checkpoint_path=None, checkpoint_epoch=None, cuda=True):
 		if checkpoint_path is None:
 			# Save to current directory
 			self.checkpoint_path = os.getcwd()
@@ -23,7 +23,9 @@ class TrainLoop(object):
 		self.save_epoch_fmt = os.path.join(self.checkpoint_path, 'checkpoint_{}ep.pt')
 		self.cuda_mode = cuda
 		self.model = model
+		self.discriminator = discriminator
 		self.optimizer = optimizer
+		self.optimizer_d = optimizer_d
 		self.train_loader = train_loader
 		self.valid_loader = valid_loader
 		self.history = {'train_loss': [], 'valid_loss': []}
@@ -36,7 +38,6 @@ class TrainLoop(object):
 			self.load_checkpoint(self.save_epoch_fmt.format(checkpoint_epoch))
 		else:
 			self.initialize_params()
-			#pass
 
 	def train(self, n_epochs=1, patience = 5):
 
@@ -85,6 +86,9 @@ class TrainLoop(object):
 	def train_step(self, batch):
 
 		self.model.train()
+		self.discriminator.train()
+		self.optimizer.zero_grad()
+		self.optimizer_d.zero_grad()
 
 		x, y = batch
 
@@ -99,9 +103,17 @@ class TrainLoop(object):
 
 		out = self.model.forward(x)
 
-		loss = torch.nn.functional.mse_loss(out,y)
+		d_real = self.discriminator.forward(y)
+		d_fake = self.discriminator.forward(out.clone())
 
-		self.optimizer.zero_grad()
+		loss_d = torch.nn.functional.binary_cross_entropy(d_real, torch.ones_like(d_real)) + torch.nn.functional.binary_cross_entropy(d_fake, torch.zeros_like(d_fake))
+		loss_d.backward()
+		self.optimizer_d.step()
+
+		d_fake_ = self.discriminator.forward(out)
+
+		loss = torch.nn.functional.mse_loss(out, y) + torch.nn.functional.binary_cross_entropy(d_fake_, torch.ones_like(d_fake_))
+
 		loss.backward()
 		self.optimizer.step()
 
@@ -110,6 +122,7 @@ class TrainLoop(object):
 	def valid(self, batch):
 
 		self.model.eval()
+		self.discriminator.eval()
 
 		x, y = batch
 
@@ -119,12 +132,15 @@ class TrainLoop(object):
 			x = x.cuda()
 			y = y.cuda()
 
-		x = Variable(x, requires_grad=False)
+		x = Variable(x)
 		y = Variable(y, requires_grad=False)
 
 		out = self.model.forward(x)
 
-		loss = torch.nn.functional.mse_loss(out,y)
+
+		d_fake_ = self.discriminator.forward(out)
+
+		loss = torch.nn.functional.mse_loss(out, y) + torch.nn.functional.binary_cross_entropy(d_fake_, torch.ones_like(d_fake_))
 
 		return loss.data[0]
 
@@ -133,7 +149,9 @@ class TrainLoop(object):
 		# Checkpointing
 		print('Checkpointing...')
 		ckpt = {'model_state': self.model.state_dict(),
+		'disc_state': self.discriminator.state_dict(),
 		'optimizer_state': self.optimizer.state_dict(),
+		'optimizer_d_state': self.optimizer_d.state_dict(),
 		'history': self.history,
 		'total_iters': self.total_iters,
 		'cur_epoch': self.cur_epoch,
@@ -148,8 +166,10 @@ class TrainLoop(object):
 			ckpt = torch.load(ckpt)
 			# Load model state
 			self.model.load_state_dict(ckpt['model_state'])
+			self.discriminator.load_state_dict(ckpt['disc_state'])
 			# Load optimizer state
 			self.optimizer.load_state_dict(ckpt['optimizer_state'])
+			self.optimizer_d.load_state_dict(ckpt['optimizer_d_state'])
 			# Load history
 			self.history = ckpt['history']
 			self.total_iters = ckpt['total_iters']
@@ -175,6 +195,13 @@ class TrainLoop(object):
 
 	def initialize_params(self):
 		for layer in self.model.modules():
+			if isinstance(layer, torch.nn.Conv2d):
+				init.kaiming_normal(layer.weight.data)
+			elif isinstance(layer, torch.nn.BatchNorm2d):
+				layer.weight.data.fill_(1)
+				layer.bias.data.zero_()
+
+		for layer in self.discriminator.modules():
 			if isinstance(layer, torch.nn.Conv2d):
 				init.kaiming_normal(layer.weight.data)
 			elif isinstance(layer, torch.nn.BatchNorm2d):
