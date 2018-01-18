@@ -153,6 +153,9 @@ class discriminator(nn.Module):
 		x = x.view(x.size(0), 40, 30, 30)
 
 		x = self.features(x)
+
+		x = x.view(x.size(0), -1)
+
 		x = self.fc(x)
 
 		return F.sigmoid(x)

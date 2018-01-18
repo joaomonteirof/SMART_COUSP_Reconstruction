@@ -36,7 +36,6 @@ class TrainLoop(object):
 			self.load_checkpoint(self.save_epoch_fmt.format(checkpoint_epoch))
 		else:
 			self.initialize_params()
-			#pass
 
 	def train(self, n_epochs=1, patience = 5):
 
@@ -77,10 +76,12 @@ class TrainLoop(object):
 			else:
 				self.its_without_improv += 1
 
+			if self.its_without_improv > patience:
+				self.update_lr()
+
 		# saving final models
 		print('Saving final model...')
-
-		torch.save(self.model.state_dict(), './final_model.pt')
+		self.checkpointing()
 
 	def train_step(self, batch):
 
@@ -180,3 +181,8 @@ class TrainLoop(object):
 			elif isinstance(layer, torch.nn.BatchNorm2d):
 				layer.weight.data.fill_(1)
 				layer.bias.data.zero_()
+
+	def update_lr(self):
+		for param_group in self.optimizer.param_groups:
+			param_group['lr'] = max(param_group['lr']/10., 0.000001)
+		print('updating lr_1 to: {}'.format(param_group['lr']))

@@ -11,10 +11,11 @@ import torch.optim as optim
 parser = argparse.ArgumentParser(description='Online transfer learning for emotion recognition tasks')
 parser.add_argument('--batch-size', type=int, default=64, metavar='N', help='input batch size for training (default: 64)')
 parser.add_argument('--valid-batch-size', type=int, default=1000, metavar='N', help='input batch size for testing (default: 1000)')
-parser.add_argument('--epochs', type=int, default=500, metavar='N', help='number of epochs to train (default: 200)')
-parser.add_argument('--patience', type=int, default=30, metavar='N', help='number of epochs without improvement to wait before stopping training (default: 30)')
-parser.add_argument('--lr', type=float, default=0.0001, metavar='LR', help='learning rate (default: 0.001)')
-parser.add_argument('--l2', type=float, default=0.000001, metavar='lambda', help='L2 wheight decay coefficient (default: 0.00001)')
+parser.add_argument('--epochs', type=int, default=200, metavar='N', help='number of epochs to train (default: 200)')
+parser.add_argument('--patience', type=int, default=10, metavar='N', help='How many epochs without improvement to wait before reducing the LR (default: 10)')
+parser.add_argument('--lr', type=float, default=0.1, metavar='LR', help='learning rate (default: 0.1)')
+parser.add_argument('--l2', type=float, default=5e-4, metavar='lambda', help='L2 wheight decay coefficient (default: 0.0005)')
+parser.add_argument('--momentum', type=float, default=0.9, metavar='lambda', help='Momentum (default: 0.9)')
 parser.add_argument('--ngpus', type=int, default=0, help='Number of GPUs to use. Default=0 (no GPU)')
 parser.add_argument('--input-data-path', type=str, default='./data/input/', metavar='Path', help='Path to data input data')
 parser.add_argument('--targets-data-path', type=str, default='./data/targets/', metavar='Path', help='Path to output data')
@@ -48,8 +49,8 @@ if args.cuda:
 	model = model.cuda()
 	discriminator = discriminator.cuda()
 
-optimizer_g = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.l2)
-optimizer_d = optim.Adam(discriminator.parameters(), lr=args.lr, weight_decay=args.l2)
+optimizer_g = optim.SGD(model.parameters(), lr=args.lr, weight_decay=args.l2, momentum=args.momentum)
+optimizer_d = optim.SGD(discriminator.parameters(), lr=args.lr, weight_decay=args.l2, momentum=args.momentum)
 
 trainer = TrainLoop(model, discriminator, optimizer_g, optimizer_d, train_loader, valid_loader, checkpoint_path=args.checkpoint_path, checkpoint_epoch=args.checkpoint_epoch, cuda=args.cuda)
 

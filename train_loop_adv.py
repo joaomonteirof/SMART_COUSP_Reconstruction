@@ -78,10 +78,12 @@ class TrainLoop(object):
 			else:
 				self.its_without_improv += 1
 
+			if self.its_without_improv > patience:
+				self.update_lr()
+
 		# saving final models
 		print('Saving final model...')
-
-		torch.save(self.model.state_dict(), './final_model.pt')
+		self.checkpointing()
 
 	def train_step(self, batch):
 
@@ -103,8 +105,10 @@ class TrainLoop(object):
 
 		out = self.model.forward(x)
 
+		out_d = out.clone.detach()
+
 		d_real = self.discriminator.forward(y)
-		d_fake = self.discriminator.forward(out.clone())
+		d_fake = self.discriminator.forward(out_d)
 
 		loss_d = torch.nn.functional.binary_cross_entropy(d_real, torch.ones_like(d_real)) + torch.nn.functional.binary_cross_entropy(d_fake, torch.zeros_like(d_fake))
 		loss_d.backward()
@@ -207,3 +211,12 @@ class TrainLoop(object):
 			elif isinstance(layer, torch.nn.BatchNorm2d):
 				layer.weight.data.fill_(1)
 				layer.bias.data.zero_()
+
+	def update_lr(self):
+		for param_group in self.optimizer.param_groups:
+			param_group['lr'] = max(param_group['lr']/10., 0.000001)
+		print('updating lr of generator to: {}'.format(param_group['lr']))
+
+		for param_group in self.optimizer_d.param_groups:
+			param_group['lr'] = max(param_group['lr']/10., 0.000001)
+		print('updating lr of discriminator to: {}'.format(param_group['lr']))
