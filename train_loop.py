@@ -185,4 +185,4 @@ class TrainLoop(object):
 	def update_lr(self):
 		for param_group in self.optimizer.param_groups:
 			param_group['lr'] = max(param_group['lr']/10., 0.000001)
-		print('updating lr_1 to: {}'.format(param_group['lr']))
+		print('updating lr to: {}'.format(param_group['lr']))

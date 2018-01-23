@@ -9,8 +9,8 @@ import torch.optim as optim
 
 # Training settings
 parser = argparse.ArgumentParser(description='Online transfer learning for emotion recognition tasks')
-parser.add_argument('--batch-size', type=int, default=64, metavar='N', help='input batch size for training (default: 64)')
-parser.add_argument('--valid-batch-size', type=int, default=1000, metavar='N', help='input batch size for testing (default: 1000)')
+parser.add_argument('--batch-size', type=int, default=128, metavar='N', help='input batch size for training (default: 128)')
+parser.add_argument('--valid-batch-size', type=int, default=512, metavar='N', help='input batch size for testing (default: 512)')
 parser.add_argument('--epochs', type=int, default=200, metavar='N', help='number of epochs to train (default: 200)')
 parser.add_argument('--patience', type=int, default=10, metavar='N', help='How many epochs without improvement to wait before reducing the LR (default: 10)')
 parser.add_argument('--lr', type=float, default=0.1, metavar='LR', help='learning rate (default: 0.1)')

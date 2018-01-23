@@ -105,7 +105,7 @@ class TrainLoop(object):
 
 		out = self.model.forward(x)
 
-		out_d = out.clone.detach()
+		out_d = out.detach()
 
 		d_real = self.discriminator.forward(y)
 		d_fake = self.discriminator.forward(out_d)
