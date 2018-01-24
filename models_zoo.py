@@ -159,3 +159,65 @@ class discriminator(nn.Module):
 		x = self.fc(x)
 
 		return F.sigmoid(x)
+
+class encoder(nn.Module):
+	def __init__(self, cuda_mode):
+		super(encoder, self).__init__()
+
+		self.cuda_mode = cuda_mode
+
+		## Considering (30, 90) inputs
+
+		self.features = nn.Sequential(
+			nn.Conv2d(1, 16, kernel_size=(3,7), padding=(1,0), stride=(1,2), bias=False),
+			nn.BatchNorm2d(16),
+			nn.ReLU(),
+			nn.Conv2d(16, 32, kernel_size=(3,7), padding=(1,0), stride=(1,1), bias=False),
+			nn.BatchNorm2d(32),
+			nn.ReLU(),
+			nn.Conv2d(32, 40, kernel_size=(3,7), padding=(1,0), stride=(1,1), bias=False),
+			nn.BatchNorm2d(40),
+			nn.ReLU() )
+
+		self.lstm_1 = nn.LSTM(30*30, 30*30, 1, bidirectional=False, batch_first=False)
+
+	def forward(self, x):
+		x = self.features(x)
+
+		x = x.view(x.size(1), x.size(0), -1)
+
+		batch_size = x.size(1)
+		seq_size = x.size(0)
+
+		h0 = Variable(torch.zeros(1, batch_size, 30*30))
+		c0 = Variable(torch.zeros(1, batch_size, 30*30))
+
+		if self.cuda_mode:
+			h0 = h0.cuda()
+			c0 = c0.cuda()
+
+		x, h_c = self.lstm_1(x, (h0, c0))
+
+		return x, h_c
+
+class decoder(nn.Module):
+	def __init__(self):
+		super(decoder, self).__init__()
+
+		self.lstm_2 = nn.LSTM(30*30, 30*30, 1, bidirectional=False, batch_first=False)
+
+		self.fc = nn.Linear(30*30,30*30)
+
+
+	def forward(self, x, h):
+
+		x = x.view(x.size(1), x.size(0), -1)
+
+		batch_size = x.size(1)
+		seq_size = x.size(0)
+
+		x, _ = self.lstm_2(x, h)
+
+		x = F.relu( self.fc( x.view(batch_size*seq_size, -1) ) )
+
+		return x.view(batch_size, seq_size, -1)
