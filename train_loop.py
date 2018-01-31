@@ -39,7 +39,7 @@ class TrainLoop(object):
 
 	def train(self, n_epochs=1, patience = 5):
 
-		while self.cur_epoch < n_epochs and self.its_without_improv < patience:
+		while self.cur_epoch < n_epochs:
 			print('Epoch {}/{}'.format(self.cur_epoch+1, n_epochs))
 			train_iter = tqdm(enumerate(self.train_loader))
 
