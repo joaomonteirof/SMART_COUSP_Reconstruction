@@ -9,11 +9,11 @@ from train_loop import TrainLoop
 import matplotlib.pyplot as plt
 import numpy as np
 
-from PIL import Image
+from PIL import Image, ImageEnhance
 
 import torchvision.transforms as transforms
 
-def test_model(model, data_loader, n_tests, cuda_mode):
+def test_model(model, data_loader, n_tests, cuda_mode, enhancement):
 
 	model.eval()
 
@@ -32,16 +32,19 @@ def test_model(model, data_loader, n_tests, cuda_mode):
 
 		sample_rec = model.forward(sample_in).cpu()
 
-		save_gif(sample_out, str(i+1)+'_real.gif')
-		save_gif(sample_rec.data[0].view([sample_out.size(0), sample_out.size(1), sample_out.size(2)]), str(i+1)+'_rec.gif')
+		save_gif(sample_out, str(i+1)+'_real.gif', enhance=False)
+		save_gif(sample_rec.data[0].view([sample_out.size(0), sample_out.size(1), sample_out.size(2)]), str(i+1)+'_rec.gif', enhance=enhancement)
 
-def save_gif(data, file_name):
+def save_gif(data, file_name, enhance):
 
 	data = data.view([data.size(2), data.size(0), data.size(1)])
 
 	to_pil = transforms.ToPILImage()
 
-	frames = [to_pil(frame.view([1, frame.size(0), frame.size(1)])) for frame in data]
+	if enhance:
+		frames = [ImageEnhance.Sharpness( to_pil(frame.view([1, frame.size(0), frame.size(1)])) ).enhance(2.0) for frame in data]
+	else:
+		frames = [to_pil(frame.view([1, frame.size(0), frame.size(1)])) for frame in data]
 
 	frames[0].save(file_name, save_all=True, append_images=frames[1:])
 
@@ -63,6 +66,7 @@ if __name__ == '__main__':
 	parser.add_argument('--n-tests', type=int, default=4, metavar='N', help='number of samples to  (default: 64)')
 	parser.add_argument('--ngpus', type=int, default=0, help='Number of GPUs to use. Default=0 (no GPU)')
 	parser.add_argument('--no-plots', action='store_true', default=False, help='Disables plot of train/test losses')
+	parser.add_argument('--enhance', action='store_true', default=True, help='Enables enhancement')
 	parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
 	args = parser.parse_args()
 	args.cuda = True if args.ngpus>0 and torch.cuda.is_available() else False
@@ -75,7 +79,8 @@ if __name__ == '__main__':
 		torch.cuda.manual_seed(args.seed)
 
 	#model = models_zoo.model(args.cuda)
-	model = models_zoo.small_model(args.cuda)
+	#model = models_zoo.small_model(args.cuda)
+	model = models_zoo.model_cnn3d(args.cuda)
 
 	if args.ngpus > 1:
 		model = torch.nn.DataParallel(model, device_ids=list(range(args.ngpus)))
@@ -92,4 +97,4 @@ if __name__ == '__main__':
 		plot_learningcurves(history, 'valid_loss')
 
 	model.load_state_dict(ckpt['model_state'])
-	test_model(model=model, data_loader=data_set, n_tests=args.n_tests, cuda_mode=args.cuda)
+	test_model(model=model, data_loader=data_set, n_tests=args.n_tests, cuda_mode=args.cuda, enhancement=args.enhance)

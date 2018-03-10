@@ -221,3 +221,68 @@ class decoder(nn.Module):
 		x = F.relu( self.fc( x.view(batch_size*seq_size, -1) ) )
 
 		return x.view(batch_size, seq_size, -1)
+
+class model_cnn3d(nn.Module):
+	def __init__(self, cuda_mode):
+		super(model_cnn3d, self).__init__()
+
+		self.cuda_mode = cuda_mode
+
+		## Considering (30, 90) inputs
+
+		self.features = nn.Sequential(
+			nn.Conv2d(1, 16, kernel_size=(3,11), padding=1, stride=(1,2), bias=False),
+			nn.BatchNorm2d(16),
+			nn.ReLU(),
+			nn.Conv2d(16, 32, kernel_size=(3,9), padding=1, stride=(2,2), bias=False),
+			nn.BatchNorm2d(32),
+			nn.ReLU(),
+			nn.Conv2d(32, 64, kernel_size=(3,5), padding=1, stride=(2,2), bias=False),
+			nn.BatchNorm2d(64),
+			nn.ReLU(),
+			nn.ConvTranspose2d(64, 128, kernel_size=5, padding=2, stride=2, bias=False),
+			nn.BatchNorm2d(128),
+			nn.ReLU(),
+			nn.ConvTranspose2d(128, 96, kernel_size=5, padding=2, output_padding=1, stride=2, bias=False),
+			nn.BatchNorm2d(96),
+			nn.ReLU(),
+			nn.ConvTranspose2d(96, 64, kernel_size=3, padding=1, stride=1, bias=False),
+			nn.BatchNorm2d(64),
+			nn.ReLU(),
+			nn.ConvTranspose2d(64, 40, kernel_size=3, padding=1, stride=1, bias=False),
+			nn.BatchNorm2d(40),
+			nn.ReLU() )
+
+		self.res1 = res_block(1, 10)
+		self.res2 = res_block(1, 10)
+		self.res3 = res_block(1, 10)
+
+		self.out_conv = nn.Sequential( nn.ConvTranspose2d(40, 40, kernel_size=1, padding=0) )
+
+	def forward(self, x):
+
+		x = self.features(x).unsqueeze(1)
+
+		x = self.res1(x)
+		x = self.res2(x)
+		x = self.res3(x)
+
+		x = x.squeeze()
+
+		x = self.out_conv(x)
+
+		return x.view(x.size(0), x.size(1), -1)
+
+class res_block(nn.Module):
+	def __init__(self, in_channels, factor):
+		super(res_block, self).__init__()
+		# with batch norm instead of dropout
+		self.res = nn.Sequential(
+			nn.Conv3d(in_channels, in_channels*factor, kernel_size=3, padding=1, stride=1, bias=False),
+			nn.BatchNorm3d(in_channels*factor),
+			nn.ReLU(),
+			nn.Conv3d(in_channels*factor, in_channels, kernel_size=3, padding=1, stride=1, bias=False),
+			nn.BatchNorm3d(in_channels) )
+
+	def forward(self, x):
+		return self.res(x) + x

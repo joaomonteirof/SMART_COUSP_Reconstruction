@@ -39,7 +39,7 @@ class TrainLoop(object):
 		else:
 			self.initialize_params()
 
-	def train(self, n_epochs=1, patience = 5):
+	def train(self, n_epochs=1, patience = 5, save_every=10):
 
 		while self.cur_epoch < n_epochs:
 			print('Epoch {}/{}'.format(self.cur_epoch+1, n_epochs))
@@ -70,14 +70,14 @@ class TrainLoop(object):
 
 			self.cur_epoch += 1
 
-			self.checkpointing()
-
 			if valid_loss < self.last_best_val_loss:
 				self.its_without_improv = 0
 				self.last_best_val_loss = valid_loss
 				self.checkpointing()
 			else:
 				self.its_without_improv += 1
+				if self.cur_epoch % save_every == 0:
+					self.checkpointing()
 
 			if self.its_without_improv > patience:
 				self.update_lr()

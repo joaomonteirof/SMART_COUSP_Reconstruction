@@ -22,7 +22,7 @@ parser.add_argument('--targets-data-path', type=str, default='./data/targets/', 
 parser.add_argument('--checkpoint-epoch', type=int, default=None, metavar='N', help='epoch to load for checkpointing. If None, training starts from scratch')
 parser.add_argument('--checkpoint-path', type=str, default=None, metavar='Path', help='Path for checkpointing')
 parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
-parser.add_argument('--save-every', type=int, default=None, metavar='N', help='how many batches to wait before logging training status. If None, cp is done every epoch')
+parser.add_argument('--save-every', type=int, default=5, metavar='N', help='how many batches to wait before logging training status. (default: 5)')
 parser.add_argument('--n_workers', type=int, default=1)
 args = parser.parse_args()
 args.cuda = True if args.ngpus>0 and torch.cuda.is_available() else False
@@ -56,4 +56,4 @@ trainer = TrainLoop(encoder, decoder, optimizer_e, optimizer_d, train_loader, va
 
 print('Cuda Mode is: {}'.format(args.cuda))
 
-trainer.train(n_epochs=args.epochs, patience = args.patience)
+trainer.train(n_epochs=args.epochs, patience = args.patience, save_every=args.save_every)

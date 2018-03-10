@@ -28,33 +28,36 @@ class TrainLoop(object):
 		self.optimizer_d = optimizer_d
 		self.train_loader = train_loader
 		self.valid_loader = valid_loader
-		self.history = {'train_loss': [], 'valid_loss': []}
+		self.history = {'train_loss': [], 'valid_loss': [], 'disc_loss':[]}
 		self.total_iters = 0
 		self.cur_epoch = 0
 		self.its_without_improv = 0
-		self.last_best_val_loss = float('inf')
+		self.last_best_val_loss = np.inf
 
 		if checkpoint_epoch is not None:
 			self.load_checkpoint(self.save_epoch_fmt.format(checkpoint_epoch))
 		else:
 			self.initialize_params()
 
-	def train(self, n_epochs=1, patience = 5):
+	def train(self, n_epochs=1, patience = 5, save_every=10):
 
 		while self.cur_epoch < n_epochs:
 			print('Epoch {}/{}'.format(self.cur_epoch+1, n_epochs))
 			train_iter = tqdm(enumerate(self.train_loader))
 
 			train_loss = 0.0
+			disc_loss = 0.0
 			valid_loss = 0.0
 
 			# Train step
 
 			for t,batch in train_iter:
 				new_train_loss = self.train_step(batch)
-				train_loss += new_train_loss
+				train_loss += new_train_loss[0]
+				disc_loss += new_train_loss[1]
 
 			self.history['train_loss'].append(train_loss/(t+1))
+			self.history['disc_loss'].append(disc_loss/(t+1))
 			self.total_iters += 1
 
 			# Validation
@@ -67,6 +70,7 @@ class TrainLoop(object):
 
 			print('Total train loss: {}'.format(self.history['train_loss'][-1]))
 			print('Total valid loss: {}'.format(self.history['valid_loss'][-1]))
+			print('Total discriminator loss: {}'.format(self.history['disc_loss'][-1]))
 
 			self.cur_epoch += 1
 
@@ -76,9 +80,13 @@ class TrainLoop(object):
 				self.checkpointing()
 			else:
 				self.its_without_improv += 1
+				if self.cur_epoch % save_every == 0:
+					self.checkpointing()
 
 			if self.its_without_improv > patience:
-				self.update_lr()
+				#self.update_lr()
+				self.its_without_improv = 0
+
 
 		# saving final models
 		print('Saving final model...')
@@ -115,12 +123,12 @@ class TrainLoop(object):
 
 		d_fake_ = self.discriminator.forward(out)
 
-		loss = torch.nn.functional.mse_loss(out, y) + torch.nn.functional.binary_cross_entropy(d_fake_, torch.ones_like(d_fake_))
+		loss = torch.nn.functional.mse_loss(out, y) + 0.01*torch.nn.functional.binary_cross_entropy(d_fake_, torch.ones_like(d_fake_))
 
 		loss.backward()
 		self.optimizer.step()
 
-		return loss.data[0]
+		return loss.data[0], loss_d.data[0]
 
 	def valid(self, batch):
 
@@ -140,10 +148,9 @@ class TrainLoop(object):
 
 		out = self.model.forward(x)
 
-
 		d_fake_ = self.discriminator.forward(out)
 
-		loss = torch.nn.functional.mse_loss(out, y) + torch.nn.functional.binary_cross_entropy(d_fake_, torch.ones_like(d_fake_))
+		loss = torch.nn.functional.mse_loss(out, y) + 0.01*torch.nn.functional.binary_cross_entropy(d_fake_, torch.ones_like(d_fake_))
 
 		return loss.data[0]
 
