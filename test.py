@@ -30,21 +30,21 @@ def test_model(model, data_loader, n_tests, cuda_mode, enhancement):
 
 		sample_in = Variable(sample_in)
 
-		sample_rec = model.forward(sample_in).cpu()
+		sample_rec = model.forward(sample_in).cpu().data[0]
 
 		save_gif(sample_out, str(i+1)+'_real.gif', enhance=False)
-		save_gif(sample_rec.data[0].view([sample_out.size(0), sample_out.size(1), sample_out.size(2)]), str(i+1)+'_rec.gif', enhance=enhancement)
+		save_gif(sample_rec, str(i+1)+'_rec.gif', enhance=enhancement)
 
 def save_gif(data, file_name, enhance):
 
-	data = data.view([data.size(2), data.size(0), data.size(1)])
+	data = data.view([40, 30, 30])
 
 	to_pil = transforms.ToPILImage()
 
 	if enhance:
-		frames = [ImageEnhance.Sharpness( to_pil(frame.view([1, frame.size(0), frame.size(1)])) ).enhance(2.0) for frame in data]
+		frames = [ImageEnhance.Sharpness( to_pil(frame.unsqueeze(0)) ).enhance(10.0) for frame in data]
 	else:
-		frames = [to_pil(frame.view([1, frame.size(0), frame.size(1)])) for frame in data]
+		frames = [to_pil(frame.unsqueeze(0)) for frame in data]
 
 	frames[0].save(file_name, save_all=True, append_images=frames[1:])
 
@@ -80,7 +80,8 @@ if __name__ == '__main__':
 
 	#model = models_zoo.model(args.cuda)
 	#model = models_zoo.small_model(args.cuda)
-	model = models_zoo.model_cnn3d(args.cuda)
+	#model = models_zoo.model_cnn3d(args.cuda)
+	model = models_zoo.model_3d_lstm(args.cuda)
 
 	if args.ngpus > 1:
 		model = torch.nn.DataParallel(model, device_ids=list(range(args.ngpus)))

@@ -10,7 +10,7 @@ import torch.optim as optim
 # Training settings
 parser = argparse.ArgumentParser(description='Online transfer learning for emotion recognition tasks')
 parser.add_argument('--batch-size', type=int, default=128, metavar='N', help='input batch size for training (default: 128)')
-parser.add_argument('--valid-batch-size', type=int, default=512, metavar='N', help='input batch size for testing (default: 512)')
+parser.add_argument('--valid-batch-size', type=int, default=256, metavar='N', help='input batch size for testing (default: 512)')
 parser.add_argument('--epochs', type=int, default=200, metavar='N', help='number of epochs to train (default: 200)')
 parser.add_argument('--patience', type=int, default=10, metavar='N', help='How many epochs without improvement to wait before reducing the LR (default: 10)')
 parser.add_argument('--lr', type=float, default=0.0003, metavar='LR', help='learning rate (default: 0.0002)')
@@ -40,7 +40,8 @@ if args.cuda:
 
 #model = models_zoo.model(args.cuda)
 #model = models_zoo.small_model(args.cuda)
-model = models_zoo.model_cnn3d(args.cuda)
+#model = models_zoo.model_cnn3d(args.cuda)
+model = models_zoo.model_3d_lstm(args.cuda)
 discriminator = models_zoo.discriminator()
 
 if args.ngpus > 1:
