@@ -9,7 +9,7 @@ from scipy.optimize import minimize
 from torch.autograd import Variable
 from tqdm import tqdm
 
-from common.MGD_utils import *
+from MGD_utils import *
 
 
 class TrainLoop(object):

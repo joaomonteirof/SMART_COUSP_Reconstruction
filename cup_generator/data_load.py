@@ -22,9 +22,9 @@ class Loader(Dataset):
 		if not self.open_file: self.open_file = h5py.File(self.hdf5_name, 'r')
 
 		scene = self.open_file['data'][index]
-		idx = np.random.randint(scene.shape[0])
+		idx = np.random.randint(scene.shape[2])
 
-		return torch.from_numpy(scene[idx]).unsqueeze(0).float()
+		return torch.from_numpy(scene[:, :, idx]).unsqueeze(0).float()
 
 	def __len__(self):
 		return self.length

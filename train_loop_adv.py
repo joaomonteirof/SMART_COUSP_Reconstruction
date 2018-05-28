@@ -123,7 +123,7 @@ class TrainLoop(object):
 
 		d_fake_ = self.discriminator.forward(out)
 
-		loss = torch.nn.functional.mse_loss(out, y) + 0.1*torch.nn.functional.binary_cross_entropy(d_fake_, torch.ones_like(d_fake_))
+		loss = torch.nn.functional.mse_loss(out, y) + 0.5*torch.nn.functional.binary_cross_entropy(d_fake_, torch.ones_like(d_fake_))
 
 		loss.backward()
 		self.optimizer.step()
