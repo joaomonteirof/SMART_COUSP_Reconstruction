@@ -27,7 +27,7 @@ class TrainLoop(object):
 		self.optimizer = optimizer
 		self.train_loader = train_loader
 		self.valid_loader = valid_loader
-		self.history = {'train_loss': [], 'valid_loss': []}
+		self.history = {'train_loss': [], 'mse': [], 'intra_mse': [], 'valid_loss': []}
 		self.total_iters = 0
 		self.cur_epoch = 0
 		self.its_without_improv = 0
@@ -45,7 +45,8 @@ class TrainLoop(object):
 			train_iter = tqdm(enumerate(self.train_loader))
 
 			train_loss = 0.0
-			disc_loss = 0.0
+			mse = 0.0
+			intra_mse = 0.0
 			valid_loss = 0.0
 
 			# Train step
@@ -53,8 +54,12 @@ class TrainLoop(object):
 			for t,batch in train_iter:
 				new_train_loss = self.train_step(batch)
 				train_loss += new_train_loss[0]
+				mse += new_train_loss[1]
+				intra_mse += new_train_loss[2]
 
 			self.history['train_loss'].append(train_loss/(t+1))
+			self.history['mse'].append(mse/(t+1))
+			self.history['intra_mse'].append(intra_mse/(t+1))
 			self.total_iters += 1
 
 			# Validation
@@ -66,6 +71,8 @@ class TrainLoop(object):
 			self.history['valid_loss'].append(valid_loss/(t+1))
 
 			print('Total train loss: {}'.format(self.history['train_loss'][-1]))
+			print('Train MSE {}'.format(self.history['mse'][-1]))
+			print('Train intra frames MSE {}'.format(self.history['intra_mse'][-1]))
 			print('Total valid loss: {}'.format(self.history['valid_loss'][-1]))
 
 			self.cur_epoch += 1
@@ -108,16 +115,24 @@ class TrainLoop(object):
 
 		out = self.model.forward(x)
 
-		loss = 0
+		loss_overall = 0
+		frames_list = []
 
 		for i in range(out.size(1)):
 			gen_frame = self.generator(out[:,i,:].squeeze())
-			loss += torch.nn.functional.mse_loss(gen_frame, y[:,i,:].squeeze())
+			frames_list.append(gen_frame)
+			loss_overall += torch.nn.functional.mse_loss(gen_frame, y[:,i,:].squeeze())
+
+		loss_diff = 0
+		for i in range(1, out.size(1)):
+			loss_diff += torch.nn.functional.mse_loss((frames_lis[i]-frames_lis[i-1]), (y[:,i,:].squeeze() - y[:,i-1,:].squeeze()))
+
+		loss = loss_diff + loss_overall
 
 		loss.backward()
 		self.optimizer.step()
 
-		return loss.data[0], loss_d.data[0]
+		return loss.data[0], loss_overall.data[0]/(len(frames_list)), loss_overall.data[0]/(len(frames_list)-1)
 
 	def valid(self, batch):
 

@@ -43,7 +43,8 @@ def test_model(model, n_tests, cuda_mode, enhance=True):
 	out = model.forward(z_)
 
 	for i in range(out.size(0)):
-		sample = denorm(out[i].data)
+		#sample = denorm(out[i].data)
+		sample = out[i].data
 
 		if len(sample.size())<3:
 			sample = sample.view(1, 28, 28)
@@ -70,7 +71,8 @@ def save_samples(generator: torch.nn.Module, cp_name: str, cuda_mode: bool, pref
 
 	noise = Variable(noise, volatile=True)
 	gen_image = generator(noise).view(-1, nc, im_size, im_size)
-	gen_image = denorm(gen_image)
+	#gen_image = denorm(gen_image)
+	gen_image = gen_image
 
 	#n_rows = np.sqrt(noise.size()[0]).astype(np.int32)
 	#n_cols = np.sqrt(noise.size()[0]).astype(np.int32)
