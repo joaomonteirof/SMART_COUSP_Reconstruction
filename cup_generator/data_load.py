@@ -21,10 +21,12 @@ class Loader(Dataset):
 
 		if not self.open_file: self.open_file = h5py.File(self.hdf5_name, 'r')
 
-		scene = self.open_file['data'][index]
-		idx = np.random.randint(scene.shape[2])
+		scene = torch.from_numpy(self.open_file['data'][index]).float().view([40, 30, 30])
+		idx = np.random.randint(scene.size(0))
+		img = scene[idx]
+		img = (img - 0.5) / 0.5
 
-		return torch.from_numpy(scene[:, :, idx]).unsqueeze(0).float()
+		return img.unsqueeze(0)
 
 	def __len__(self):
 		return self.length

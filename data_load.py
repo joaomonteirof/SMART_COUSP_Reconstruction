@@ -5,20 +5,22 @@ from torch.utils.data import Dataset
 
 class Loader(Dataset):
 
-	def __init__(self, input_file, output_file):
+	def __init__(self, input_file_name, output_file_name):
 		super(Loader, self).__init__()
-		self.in_file = input_file
-		self.out_file = output_file
+		self.input_file_name = input_file_name
+		self.output_file_name = output_file_name
+		self.in_file = None
+		self.out_file = None
 
 	def __getitem__(self, index):
-		in_file = h5py.File(self.in_file, 'r')
-		in_samples = in_file['input_samples'][:,:,:,index]
-		in_samples = in_samples.reshape([in_samples.shape[2], in_samples.shape[1], in_samples.shape[0]])
-		in_file.close()
 
-		out_file = h5py.File(self.out_file, 'r')
-		out_samples = out_file['data'][index]
-		out_file.close()
+		if not self.in_file: self.in_file = h5py.File(self.input_file_name, 'r')
+		in_samples = self.in_file['input_samples'][:,:,:,index]
+		in_samples = in_samples.reshape([in_samples.shape[2], in_samples.shape[1], in_samples.shape[0]])
+
+		if not self.out_file: self.out_file = h5py.File(self.output_file_name, 'r')
+		self.out_file = h5py.File(self.out_file, 'r')
+		out_samples = (self.out_file['data'][index]-0.5)/0.5
 
 		return torch.from_numpy(in_samples).float(), torch.from_numpy(out_samples).float()
 
@@ -51,7 +53,7 @@ class Loader_manyfiles(Dataset):
 		in_file.close()
 
 		out_file = h5py.File(self.out_file_base_name+'_'+str(file_)+'.hdf', 'r')
-		out_samples = out_file['data'][index]
+		out_samples = (out_file['data'][index]-0.5)/0.5
 		out_file.close()
 
 		return torch.from_numpy(in_samples).float(), torch.from_numpy(out_samples).float()

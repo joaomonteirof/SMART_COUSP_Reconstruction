@@ -60,7 +60,7 @@ class model(nn.Module):
 
 		x, _ = self.lstm_2(x, h_c)
 
-		x = F.relu( self.fc( x.view(batch_size*seq_size, -1) ) )
+		x = F.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
 
 		return x.view(batch_size, seq_size, -1)
 
@@ -125,7 +125,7 @@ class small_model(nn.Module):
 
 		x, _ = self.lstm_2(x, h_c)
 
-		x = F.relu( self.fc( x.view(batch_size*seq_size, -1) ) )
+		x = F.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
 
 		return x.view(batch_size, seq_size, -1)
 
@@ -214,7 +214,7 @@ class decoder(nn.Module):
 
 		x, _ = self.lstm_2(x, h)
 
-		x = F.relu( self.fc( x.view(batch_size*seq_size, -1) ) )
+		x = F.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
 
 		return x.view(batch_size, seq_size, -1)
 
@@ -265,7 +265,7 @@ class model_cnn3d(nn.Module):
 
 		x = x.view(x.size(0), x.size(2), x.size(3), x.size(4))
 
-		x = self.out_conv(x)
+		x = F.tanh( self.out_conv(x) )
 
 		return x.view(x.size(0), x.size(1), -1)
 
@@ -354,7 +354,7 @@ class model_3d_lstm(nn.Module):
 
 		x, _ = self.lstm_2(x, h_c)
 
-		x = F.sigmoid( self.fc( x.view(batch_size*seq_size, -1) ) )
+		x = F.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
 
 		return x.view(batch_size, seq_size, -1)
 
@@ -429,7 +429,7 @@ class model_3d_lstm_gen(nn.Module):
 
 		x, _ = self.lstm_2(x, h_c)
 
-		x = F.sigmoid( self.fc( x.view(batch_size*seq_size, -1) ) )
+		x = F.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
 
 		return x.view(batch_size, seq_size, -1)
 
