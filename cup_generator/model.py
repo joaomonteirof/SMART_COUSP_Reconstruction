@@ -74,7 +74,7 @@ class Discriminator(torch.nn.Module):
 	def __init__(self, optimizer, lr, betas, batch_norm=False):
 		super(Discriminator, self).__init__()
 
-		self.projection = nn.utils.weight_norm(nn.Conv2d(1, 3, kernel_size=8, stride=2, padding=3, bias=False), name="weight")
+		self.projection = nn.utils.weight_norm(nn.Conv2d(1, 1, kernel_size=8, stride=2, padding=3, bias=False), name="weight")
 		self.projection.weight_g.data.fill_(1)
 
 		# Hidden layers
@@ -83,7 +83,7 @@ class Discriminator(torch.nn.Module):
 		for i in range(3):
 			# Convolutional layer
 			if i == 0:
-				conv = nn.Conv2d(3, num_filters[i], kernel_size=4, stride=2, padding=2)
+				conv = nn.Conv2d(1, num_filters[i], kernel_size=4, stride=2, padding=2)
 			else:
 				conv = nn.Conv2d(num_filters[i - 1], num_filters[i], kernel_size=4, stride=2, padding=1)
 
