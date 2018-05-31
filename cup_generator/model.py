@@ -9,7 +9,7 @@ class Generator(torch.nn.Module):
 		#linear layer
 		self.linear = torch.nn.Sequential()
 
-		linear = nn.Linear(100, 2*2*512)
+		linear = nn.Linear(100, 2*2*1024)
 
 		self.linear.add_module('linear', linear)
 
@@ -19,19 +19,19 @@ class Generator(torch.nn.Module):
 
 		# Batch normalization
 		bn_name = 'bn0'
-		self.linear.add_module(bn_name, torch.nn.BatchNorm1d(2*2*512))
+		self.linear.add_module(bn_name, torch.nn.BatchNorm1d(2*2*1024))
 
 		# Activation
 		act_name = 'act0'
 		self.linear.add_module(act_name, torch.nn.ReLU())
 
 		# Hidden layers
-		num_filters = [256, 128, 64]
+		num_filters = [1024, 512, 256]
 		self.hidden_layer = torch.nn.Sequential()
 		for i in range(3):
 			# Deconvolutional layer
 			if i == 0:
-				deconv = nn.ConvTranspose2d(512, num_filters[i], kernel_size=4, stride=2, padding=1)
+				deconv = nn.ConvTranspose2d(1024, num_filters[i], kernel_size=4, stride=2, padding=1)
 			else:
 				deconv = nn.ConvTranspose2d(num_filters[i - 1], num_filters[i], kernel_size=4, stride=2, padding=1)
 
@@ -53,7 +53,7 @@ class Generator(torch.nn.Module):
 		# Output layer
 		self.output_layer = torch.nn.Sequential()
 		# Deconvolutional layer
-		out = torch.nn.ConvTranspose2d(64, 1, kernel_size=4, stride=2, padding=2)
+		out = torch.nn.ConvTranspose2d(256, 1, kernel_size=4, stride=2, padding=2)
 		self.output_layer.add_module('out', out)
 		# Initializer
 		nn.init.normal(out.weight, mean=0.0, std=0.02)
@@ -66,7 +66,7 @@ class Generator(torch.nn.Module):
 		x = x.view(x.size(0), -1)
 		x = self.linear(x)
 
-		h = self.hidden_layer(x.view(x.size(0), 512, 2, 2))
+		h = self.hidden_layer(x.view(x.size(0), 1024, 2, 2))
 		out = self.output_layer(h)
 		return out
 
@@ -79,7 +79,7 @@ class Discriminator(torch.nn.Module):
 
 		# Hidden layers
 		self.hidden_layer = torch.nn.Sequential()
-		num_filters = [64, 128, 256]
+		num_filters = [256, 512, 1024]
 		for i in range(3):
 			# Convolutional layer
 			if i == 0:
