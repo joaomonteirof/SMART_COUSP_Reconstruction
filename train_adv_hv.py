@@ -3,7 +3,7 @@ import argparse
 import torch
 import models_zoo
 from data_load import Loader, Loader_manyfiles
-from train_loop_adv import TrainLoop
+from train_loop_adv_hv import TrainLoop
 from torch.utils.data.dataloader import DataLoader
 import torch.optim as optim
 
@@ -17,6 +17,7 @@ parser.add_argument('--lr', type=float, default=0.0003, metavar='LR', help='lear
 parser.add_argument('--beta1', type=float, default=0.5, metavar='beta1', help='Adam beta 1 (default: 0.5)')
 parser.add_argument('--beta2', type=float, default=0.999, metavar='beta2', help='Adam beta 2 (default: 0.99)')
 parser.add_argument('--ndiscriminators', type=int, default=8, help='Number of discriminators. Default=8')
+parser.add_argument('--nadir-slack', type=float, default=1.5, metavar='nadir', help='factor for nadir-point update. Only used in hyper mode (default: 1.5)')
 parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
 parser.add_argument('--input-data-path', type=str, default='./data/input/', metavar='Path', help='Path to data input data')
 parser.add_argument('--targets-data-path', type=str, default='./data/targets/', metavar='Path', help='Path to output data')
@@ -30,7 +31,7 @@ args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
 #train_data_set = Loader(input_file=args.input_data_path+'input_train.hdf', output_file=args.targets_data_path+'output_train.hdf')
 train_data_set = Loader_manyfiles(input_file_base_name=args.input_data_path+'input_train', output_file_base_name=args.targets_data_path+'output_train', n_files=4)
-valid_data_set = Loader(input_file=args.input_data_path+'input_valid.hdf', output_file=args.targets_data_path+'output_valid.hdf')
+valid_data_set = Loader(input_file_name=args.input_data_path+'input_valid.hdf', output_file_name=args.targets_data_path+'output_valid.hdf')
 
 train_loader = DataLoader(train_data_set, batch_size=args.batch_size, shuffle=False, num_workers=args.n_workers)
 valid_loader = DataLoader(valid_data_set, batch_size=args.valid_batch_size, shuffle=False, num_workers=args.n_workers)
@@ -54,7 +55,7 @@ if args.cuda:
 
 optimizer_g = optim.Adam(model.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
 
-trainer = TrainLoop(model, disc_list, optimizer_g, train_loader, valid_loader, checkpoint_path=args.checkpoint_path, checkpoint_epoch=args.checkpoint_epoch, cuda=args.cuda)
+trainer = TrainLoop(model, disc_list, optimizer_g, train_loader, valid_loader, nadir_slack=args.nadir_slack, checkpoint_path=args.checkpoint_path, checkpoint_epoch=args.checkpoint_epoch, cuda=args.cuda)
 
 print('Cuda Mode is: {}'.format(args.cuda))
 print('Number of discriminators is: {}'.format(len(disc_list)))

@@ -176,13 +176,15 @@ class discriminator_proj(nn.Module):
 			nn.Conv2d(512, 1, kernel_size=4, padding=1, stride=1, bias=False),
 			nn.Sigmoid() )
 
+		self.optimizer = optimizer(list(self.features.parameters()), lr=lr, betas=betas)
+
 	def forward(self, x):
 
 		## Considering (40, 30, 30) inputs
 
 		x = x.view(x.size(0), 40, 30, 30)
-
-		x = self.features(x)
+		p_x = self.projection(x)
+		x = self.features(p_x)
 
 		return x.squeeze()
 

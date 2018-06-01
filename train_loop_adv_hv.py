@@ -1,6 +1,7 @@
 import torch
 from torch.autograd import Variable
 import torch.nn.init as init
+import torch.nn.functional as F
 
 import numpy as np
 import pickle
@@ -11,7 +12,7 @@ from tqdm import tqdm
 
 class TrainLoop(object):
 
-	def __init__(self, model, disc_list, optimizer, optimizer_d, train_loader, valid_loader, checkpoint_path=None, checkpoint_epoch=None, cuda=True):
+	def __init__(self, model, disc_list, optimizer, train_loader, valid_loader, nadir_slack=1.1, checkpoint_path=None, checkpoint_epoch=None, cuda=True):
 		if checkpoint_path is None:
 			# Save to current directory
 			self.checkpoint_path = os.getcwd()
@@ -33,6 +34,7 @@ class TrainLoop(object):
 		self.cur_epoch = 0
 		self.its_without_improv = 0
 		self.last_best_val_loss = np.inf
+		self.nadir_slack = nadir_slack
 
 		if checkpoint_epoch is not None:
 			self.load_checkpoint(self.save_epoch_fmt_model.format(checkpoint_epoch))
@@ -95,8 +97,6 @@ class TrainLoop(object):
 	def train_step(self, batch):
 
 		self.model.train()
-		self.discriminator.train()
-		self.optimizer.zero_grad()
 
 		x, y = batch
 		y_real_ = torch.ones(x.size(0))
@@ -130,7 +130,6 @@ class TrainLoop(object):
 			loss_disc = F.binary_cross_entropy(d_real, y_real_) + F.binary_cross_entropy(d_fake, y_fake_)
 			loss_disc.backward()
 			disc.optimizer.step()
-
 			loss_d += loss_disc.data[0]
 
 		# train main model
@@ -155,16 +154,15 @@ class TrainLoop(object):
 
 		loss_model -= torch.log(self.nadir - rec_loss)
 
+		self.optimizer.zero_grad()
 		loss_model.backward()
-
 		self.optimizer.step()
 
-		return loss_AE.data[0], rec_loss.data[0], loss_adv, loss_d
+		return loss_model.data[0], rec_loss.data[0], loss_adv, loss_d
 
 	def valid(self, batch):
 
 		self.model.eval()
-		self.discriminator.eval()
 
 		x, y = batch
 
@@ -179,7 +177,7 @@ class TrainLoop(object):
 
 		out = self.model.forward(x)
 
-		loss = torch.nn.functional.mse_loss(out, y)
+		loss = F.mse_loss(out, y)
 
 		return loss.data[0]
 
@@ -242,13 +240,6 @@ class TrainLoop(object):
 
 	def initialize_params(self):
 		for layer in self.model.modules():
-			if isinstance(layer, torch.nn.Conv2d):
-				init.kaiming_normal(layer.weight.data)
-			elif isinstance(layer, torch.nn.BatchNorm2d):
-				layer.weight.data.fill_(1)
-				layer.bias.data.zero_()
-
-		for layer in self.discriminator.modules():
 			if isinstance(layer, torch.nn.Conv2d):
 				init.kaiming_normal(layer.weight.data)
 			elif isinstance(layer, torch.nn.BatchNorm2d):
