@@ -58,6 +58,10 @@ class TrainLoop(object):
 			for t,batch in train_iter:
 				hv, mse, adv, disc = self.train_step(batch)
 				self.total_iters += 1
+				hv_epoch+=hv
+				mse_epoch+=mse
+				adv_epoch+=adv
+				disc_epoch+=disc
 
 			self.history['hv'].append(hv_epoch/(t+1))
 			self.history['mse'].append(mse_epoch/(t+1))
