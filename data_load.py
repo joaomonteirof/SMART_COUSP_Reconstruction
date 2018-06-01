@@ -12,21 +12,27 @@ class Loader(Dataset):
 		self.in_file = None
 		self.out_file = None
 
+		open_file = h5py.File(output_file_name, 'r')
+
+		self.len = open_file['data'].shape[0]
+
+		open_file.close()
+
 	def __getitem__(self, index):
 
 		if not self.in_file: self.in_file = h5py.File(self.input_file_name, 'r')
 		in_samples = self.in_file['input_samples'][:,:,:,index]
 		in_samples = in_samples.reshape([in_samples.shape[2], in_samples.shape[1], in_samples.shape[0]])
 
+		self.in_file.close()
+
 		if not self.out_file: self.out_file = h5py.File(self.output_file_name, 'r')
-		self.out_file = h5py.File(self.out_file, 'r')
 		out_samples = (self.out_file['data'][index]-0.5)/0.5
 
 		return torch.from_numpy(in_samples).float(), torch.from_numpy(out_samples).float()
 
 	def __len__(self):
-		open_file = h5py.File(self.out_file, 'r')
-		return open_file['data'].shape[0]
+		return self.len
 
 class Loader_manyfiles(Dataset):
 
