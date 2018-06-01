@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 class TrainLoop(object):
 
-	def __init__(self, model, generator, optimizer, optimizer_d, train_loader, valid_loader, checkpoint_path=None, checkpoint_epoch=None, cuda=True):
+	def __init__(self, model, generator, optimizer, train_loader, valid_loader, checkpoint_path=None, checkpoint_epoch=None, cuda=True):
 		if checkpoint_path is None:
 			# Save to current directory
 			self.checkpoint_path = os.getcwd()
@@ -98,9 +98,7 @@ class TrainLoop(object):
 	def train_step(self, batch):
 
 		self.model.train()
-		self.discriminator.train()
 		self.optimizer.zero_grad()
-		self.optimizer_d.zero_grad()
 
 		x, y = batch
 
@@ -119,13 +117,13 @@ class TrainLoop(object):
 		frames_list = []
 
 		for i in range(out.size(1)):
-			gen_frame = self.generator(out[:,i,:].squeeze())
+			gen_frame = self.generator(out[:,i,:].squeeze().contiguous())
 			frames_list.append(gen_frame)
 			loss_overall += torch.nn.functional.mse_loss(gen_frame, y[:,i,:].squeeze())
 
 		loss_diff = 0
 		for i in range(1, out.size(1)):
-			loss_diff += torch.nn.functional.mse_loss((frames_lis[i]-frames_lis[i-1]), (y[:,i,:].squeeze() - y[:,i-1,:].squeeze()))
+			loss_diff += torch.nn.functional.mse_loss((frames_list[i]-frames_list[i-1]), (y[:,i,:].squeeze() - y[:,i-1,:].squeeze()))
 
 		loss = loss_diff + loss_overall
 
@@ -137,7 +135,6 @@ class TrainLoop(object):
 	def valid(self, batch):
 
 		self.model.eval()
-		self.discriminator.eval()
 
 		x, y = batch
 
@@ -212,19 +209,3 @@ class TrainLoop(object):
 			elif isinstance(layer, torch.nn.BatchNorm2d):
 				layer.weight.data.fill_(1)
 				layer.bias.data.zero_()
-
-		for layer in self.discriminator.modules():
-			if isinstance(layer, torch.nn.Conv2d):
-				init.kaiming_normal(layer.weight.data)
-			elif isinstance(layer, torch.nn.BatchNorm2d):
-				layer.weight.data.fill_(1)
-				layer.bias.data.zero_()
-
-	def update_lr(self):
-		for param_group in self.optimizer.param_groups:
-			param_group['lr'] = max(param_group['lr']/10., 0.000001)
-		print('updating lr of generator to: {}'.format(param_group['lr']))
-
-		for param_group in self.optimizer_d.param_groups:
-			param_group['lr'] = max(param_group['lr']/10., 0.000001)
-		print('updating lr of discriminator to: {}'.format(param_group['lr']))
