@@ -16,7 +16,8 @@ parser.add_argument('--patience', type=int, default=10, metavar='N', help='How m
 parser.add_argument('--lr', type=float, default=0.0003, metavar='LR', help='learning rate (default: 0.0002)')
 parser.add_argument('--beta1', type=float, default=0.5, metavar='beta1', help='Adam beta 1 (default: 0.5)')
 parser.add_argument('--beta2', type=float, default=0.999, metavar='beta2', help='Adam beta 2 (default: 0.99)')
-parser.add_argument('--ngpus', type=int, default=0, help='Number of GPUs to use. Default=0 (no GPU)')
+parser.add_argument('--ndiscriminators', type=int, default=8, help='Number of discriminators. Default=8')
+parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
 parser.add_argument('--input-data-path', type=str, default='./data/input/', metavar='Path', help='Path to data input data')
 parser.add_argument('--targets-data-path', type=str, default='./data/targets/', metavar='Path', help='Path to output data')
 parser.add_argument('--checkpoint-epoch', type=int, default=None, metavar='N', help='epoch to load for checkpointing. If None, training starts from scratch')
@@ -25,7 +26,7 @@ parser.add_argument('--seed', type=int, default=1, metavar='S', help='random see
 parser.add_argument('--save-every', type=int, default=5, metavar='N', help='how many batches to wait before logging training status. (default: 5)')
 parser.add_argument('--n-workers', type=int, default=2)
 args = parser.parse_args()
-args.cuda = True if args.ngpus>0 and torch.cuda.is_available() else False
+args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
 #train_data_set = Loader(input_file=args.input_data_path+'input_train.hdf', output_file=args.targets_data_path+'output_train.hdf')
 train_data_set = Loader_manyfiles(input_file_base_name=args.input_data_path+'input_train', output_file_base_name=args.targets_data_path+'output_train', n_files=4)
@@ -38,25 +39,24 @@ torch.manual_seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
-#model = models_zoo.model(args.cuda)
-#model = models_zoo.small_model(args.cuda)
-#model = models_zoo.model_cnn3d(args.cuda)
 model = models_zoo.model_3d_lstm(args.cuda)
-discriminator = models_zoo.discriminator()
 
-if args.ngpus > 1:
-	model = torch.nn.DataParallel(model, device_ids=list(range(args.ngpus)))
-	discriminator = torch.nn.DataParallel(discriminator, device_ids=list(range(args.ngpus)))
+disc_list = []
+for i in range(args.ndiscriminators):
+	disc = models_zoo.discriminator_proj(optim.Adam, args.lr, (args.beta1, args.beta2)).train()
+	disc_list.append(disc)
 
 if args.cuda:
 	model = model.cuda()
-	discriminator = discriminator.cuda()
+	for disc in disc_list:
+		disc = disc.cuda()
+	torch.backends.cudnn.benchmark=True
 
 optimizer_g = optim.Adam(model.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
-optimizer_d = optim.Adam(discriminator.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
 
-trainer = TrainLoop(model, discriminator, optimizer_g, optimizer_d, train_loader, valid_loader, checkpoint_path=args.checkpoint_path, checkpoint_epoch=args.checkpoint_epoch, cuda=args.cuda)
+trainer = TrainLoop(model, disc_list, optimizer_g, train_loader, valid_loader, checkpoint_path=args.checkpoint_path, checkpoint_epoch=args.checkpoint_epoch, cuda=args.cuda)
 
 print('Cuda Mode is: {}'.format(args.cuda))
+print('Number of discriminators is: {}'.format(len(disc_list)))
 
 trainer.train(n_epochs=args.epochs, patience = args.patience, save_every = args.save_every)

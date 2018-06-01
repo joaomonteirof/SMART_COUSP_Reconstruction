@@ -156,6 +156,36 @@ class discriminator(nn.Module):
 
 		return x.squeeze()
 
+class discriminator_proj(nn.Module):
+	def __init__(self, optimizer, lr, betas):
+		super(discriminator_proj, self).__init__()
+
+		self.projection = nn.utils.weight_norm(nn.Conv2d(40, 40, kernel_size=8, stride=2, padding=3, bias=False), name="weight")
+		self.projection.weight_g.data.fill_(1)
+
+		self.features = nn.Sequential(
+			nn.Conv2d(40, 128, kernel_size=4, padding=2, stride=2, bias=False),
+			nn.BatchNorm2d(128),
+			nn.LeakyReLU(0.2),
+			nn.Conv2d(128, 256, kernel_size=4, padding=1, stride=2, bias=False),
+			nn.BatchNorm2d(256),
+			nn.LeakyReLU(0.2),
+			nn.Conv2d(256, 512, kernel_size=4, padding=1, stride=2, bias=False),
+			nn.BatchNorm2d(512),
+			nn.LeakyReLU(0.2),
+			nn.Conv2d(512, 1, kernel_size=4, padding=1, stride=1, bias=False),
+			nn.Sigmoid() )
+
+	def forward(self, x):
+
+		## Considering (40, 30, 30) inputs
+
+		x = x.view(x.size(0), 40, 30, 30)
+
+		x = self.features(x)
+
+		return x.squeeze()
+
 class encoder(nn.Module):
 	def __init__(self, cuda_mode):
 		super(encoder, self).__init__()

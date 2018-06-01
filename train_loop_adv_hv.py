@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 class TrainLoop(object):
 
-	def __init__(self, model, discriminator, optimizer, optimizer_d, train_loader, valid_loader, checkpoint_path=None, checkpoint_epoch=None, cuda=True):
+	def __init__(self, model, disc_list, optimizer, optimizer_d, train_loader, valid_loader, checkpoint_path=None, checkpoint_epoch=None, cuda=True):
 		if checkpoint_path is None:
 			# Save to current directory
 			self.checkpoint_path = os.getcwd()
@@ -20,22 +20,22 @@ class TrainLoop(object):
 			if not os.path.isdir(self.checkpoint_path):
 				os.mkdir(self.checkpoint_path)
 
-		self.save_epoch_fmt = os.path.join(self.checkpoint_path, 'checkpoint_{}ep.pt')
+		self.save_epoch_fmt_model = os.path.join(self.checkpoint_path, 'checkpoint_{}ep.pt')
+		self.save_epoch_fmt_disc = os.path.join(self.checkpoint_path, 'D{}_checkpoint.pt')
 		self.cuda_mode = cuda
 		self.model = model
-		self.discriminator = discriminator
+		self.disc_list = disc_list
 		self.optimizer = optimizer
-		self.optimizer_d = optimizer_d
 		self.train_loader = train_loader
 		self.valid_loader = valid_loader
-		self.history = {'train_loss': [], 'valid_loss': [], 'disc_loss':[]}
+		self.history = {'hv': [], 'mse': [], 'adv': [], 'disc': [], 'valid_mse': []}
 		self.total_iters = 0
 		self.cur_epoch = 0
 		self.its_without_improv = 0
 		self.last_best_val_loss = np.inf
 
 		if checkpoint_epoch is not None:
-			self.load_checkpoint(self.save_epoch_fmt.format(checkpoint_epoch))
+			self.load_checkpoint(self.save_epoch_fmt_model.format(checkpoint_epoch))
 		else:
 			self.initialize_params()
 
@@ -45,20 +45,22 @@ class TrainLoop(object):
 			print('Epoch {}/{}'.format(self.cur_epoch+1, n_epochs))
 			train_iter = tqdm(enumerate(self.train_loader))
 
-			train_loss = 0.0
-			disc_loss = 0.0
-			valid_loss = 0.0
+			hv_epoch=0.0
+			mse_epoch=0.0
+			adv_epoch=0.0
+			disc_epoch=0.0
+			valid_loss=0.0
 
 			# Train step
 
 			for t,batch in train_iter:
-				new_train_loss = self.train_step(batch)
-				train_loss += new_train_loss[0]
-				disc_loss += new_train_loss[1]
+				hv, mse, adv, disc = self.train_step(batch)
+				self.total_iters += 1
 
-			self.history['train_loss'].append(train_loss/(t+1))
-			self.history['disc_loss'].append(disc_loss/(t+1))
-			self.total_iters += 1
+			self.history['hv'].append(hv_epoch/(t+1))
+			self.history['mse'].append(mse_epoch/(t+1))
+			self.history['adv'].append(adv_epoch/(t+1))
+			self.history['disc'].append(disc_epoch/(t+1))
 
 			# Validation
 
@@ -66,11 +68,10 @@ class TrainLoop(object):
 				new_valid_loss = self.valid(batch)
 				valid_loss += new_valid_loss
 
-			self.history['valid_loss'].append(valid_loss/(t+1))
+			self.history['valid_mse'].append(valid_loss/(t+1))
 
-			print('Total train loss: {}'.format(self.history['train_loss'][-1]))
-			print('Total valid loss: {}'.format(self.history['valid_loss'][-1]))
-			print('Total discriminator loss: {}'.format(self.history['disc_loss'][-1]))
+			print('NLH, MSE, Adversarial Loss, and Discriminators loss : {:0.4f}, {:0.4f}, {:0.4f}, {:0.4f}'.format(self.history['hv'][-1], self.history['mse'][-1], self.history['adv'][-1], self.history['disc'][-1]))
+			print('Total valid MSE: {}'.format(self.history['valid_mse'][-1]))
 
 			self.cur_epoch += 1
 
@@ -87,7 +88,6 @@ class TrainLoop(object):
 				#self.update_lr()
 				self.its_without_improv = 0
 
-
 		# saving final models
 		print('Saving final model...')
 		self.checkpointing()
@@ -97,38 +97,69 @@ class TrainLoop(object):
 		self.model.train()
 		self.discriminator.train()
 		self.optimizer.zero_grad()
-		self.optimizer_d.zero_grad()
 
 		x, y = batch
+		y_real_ = torch.ones(x.size(0))
+		y_fake_ = torch.zeros(x.size(0))
 
 		y = y.view(y.size(0), y.size(3), y.size(1)*y.size(2))
 
 		if self.cuda_mode:
 			x = x.cuda()
 			y = y.cuda()
+			y_real_ = y_real_.cuda()
+			y_fake_ = y_fake_.cuda()
 
 		x = Variable(x)
 		y = Variable(y, requires_grad=False)
+		y_real_ = Variable(y_real_)
+		y_fake_ = Variable(y_fake_)
 
 		out = self.model.forward(x)
 
 		out_d = out.detach()
 
-		d_real = self.discriminator.forward(y)
-		d_fake = self.discriminator.forward(out_d)
+		# train discriminators
 
-		loss_d = torch.nn.functional.binary_cross_entropy(d_real, torch.ones_like(d_real)) + torch.nn.functional.binary_cross_entropy(d_fake, torch.zeros_like(d_fake))
-		loss_d.backward()
-		self.optimizer_d.step()
+		loss_d = 0
 
-		d_fake_ = self.discriminator.forward(out)
+		for disc in self.disc_list:
+			disc.optimizer.zero_grad()
+			d_real = disc.forward(y).squeeze()
+			d_fake = disc.forward(out_d).squeeze()
+			loss_disc = F.binary_cross_entropy(d_real, y_real_) + F.binary_cross_entropy(d_fake, y_fake_)
+			loss_disc.backward()
+			disc.optimizer.step()
 
-		loss = torch.nn.functional.mse_loss(out, y) + 0.5*torch.nn.functional.binary_cross_entropy(d_fake_, torch.ones_like(d_fake_))
+			loss_d += loss_disc.data[0]
 
-		loss.backward()
+		# train main model
+
+		loss_model = 0
+		loss_adv = 0
+		losses_list_float = []
+		losses_list_var = []
+
+		for disc in self.disc_list:
+			losses_list_var.append(F.binary_cross_entropy(disc.forward(out).squeeze(), y_real_))
+			losses_list_float.append(losses_list_var[-1].data[0])
+
+		rec_loss = F.mse_loss(out, y)
+		losses_list_float.append(rec_loss.data[0])
+
+		self.update_nadir_point(losses_list_float)
+
+		for i, loss in enumerate(losses_list_var):
+			loss_model -= torch.log(self.nadir - loss)
+			loss_adv += loss.data[0]
+
+		loss_model -= torch.log(self.nadir - rec_loss)
+
+		loss_model.backward()
+
 		self.optimizer.step()
 
-		return loss.data[0], loss_d.data[0]
+		return loss_AE.data[0], rec_loss.data[0], loss_adv, loss_d
 
 	def valid(self, batch):
 
@@ -148,9 +179,7 @@ class TrainLoop(object):
 
 		out = self.model.forward(x)
 
-		d_fake_ = self.discriminator.forward(out)
-
-		loss = torch.nn.functional.mse_loss(out, y) + 0.1*torch.nn.functional.binary_cross_entropy(d_fake_, torch.ones_like(d_fake_))
+		loss = torch.nn.functional.mse_loss(out, y)
 
 		return loss.data[0]
 
@@ -159,15 +188,18 @@ class TrainLoop(object):
 		# Checkpointing
 		print('Checkpointing...')
 		ckpt = {'model_state': self.model.state_dict(),
-		'disc_state': self.discriminator.state_dict(),
 		'optimizer_state': self.optimizer.state_dict(),
-		'optimizer_d_state': self.optimizer_d.state_dict(),
 		'history': self.history,
 		'total_iters': self.total_iters,
 		'cur_epoch': self.cur_epoch,
 		'its_without_improve': self.its_without_improv,
 		'last_best_val_loss': self.last_best_val_loss}
-		torch.save(ckpt, self.save_epoch_fmt.format(self.cur_epoch))
+		torch.save(ckpt, self.save_epoch_fmt_model.format(self.cur_epoch))
+
+		for i, disc in enumerate(self.disc_list):
+			ckpt = {'model_state': disc.state_dict(),
+				'optimizer_state': disc.optimizer.state_dict()}
+			torch.save(ckpt, self.save_epoch_fmt_disc.format(i + 1))
 
 	def load_checkpoint(self, ckpt):
 
@@ -176,10 +208,8 @@ class TrainLoop(object):
 			ckpt = torch.load(ckpt)
 			# Load model state
 			self.model.load_state_dict(ckpt['model_state'])
-			self.discriminator.load_state_dict(ckpt['disc_state'])
 			# Load optimizer state
 			self.optimizer.load_state_dict(ckpt['optimizer_state'])
-			self.optimizer_d.load_state_dict(ckpt['optimizer_d_state'])
 			# Load history
 			self.history = ckpt['history']
 			self.total_iters = ckpt['total_iters']
@@ -187,15 +217,22 @@ class TrainLoop(object):
 			self.its_without_improv = ckpt['its_without_improve']
 			self.last_best_val_loss = ckpt['last_best_val_loss']
 
+			for i, disc in enumerate(self.disc_list):
+				ckpt = torch.load(self.save_epoch_fmt_disc.format(i + 1))
+				disc.load_state_dict(ckpt['model_state'])
+				disc.optimizer.load_state_dict(ckpt['optimizer_state'])
+
 		else:
 			print('No checkpoint found at: {}'.format(ckpt))
+
+	def update_nadir_point(self, losses_list):
+		self.nadir = float(np.max(losses_list) * self.nadir_slack + 1e-8)
 
 	def print_params_norms(self):
 		norm = 0.0
 		for params in list(self.model.parameters()):
 			norm+=params.norm(2).data[0]
 		print('Sum of weights norms: {}'.format(norm))
-
 
 	def print_grad_norms(self):
 		norm = 0.0
@@ -217,12 +254,3 @@ class TrainLoop(object):
 			elif isinstance(layer, torch.nn.BatchNorm2d):
 				layer.weight.data.fill_(1)
 				layer.bias.data.zero_()
-
-	def update_lr(self):
-		for param_group in self.optimizer.param_groups:
-			param_group['lr'] = max(param_group['lr']/10., 0.000001)
-		print('updating lr of generator to: {}'.format(param_group['lr']))
-
-		for param_group in self.optimizer_d.param_groups:
-			param_group['lr'] = max(param_group['lr']/10., 0.000001)
-		print('updating lr of discriminator to: {}'.format(param_group['lr']))
