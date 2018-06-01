@@ -35,7 +35,7 @@ class TrainLoop(object):
 		self.disc_list = disc_list
 		self.optimizer = optimizer
 		self.train_loader = train_loader
-		self.history = {'gen_loss': [], 'gen_loss_minibatch': [], 'disc_loss': [], 'disc_loss_minibatch': [], 'steepest_dir_norm': []}
+		self.history = {'gen_loss': [], 'gen_loss_minibatch': [], 'disc_loss': [], 'disc_loss_minibatch': []}
 		self.total_iters = 0
 		self.cur_epoch = 0
 		self.alpha = alpha
@@ -67,11 +67,8 @@ class TrainLoop(object):
 				self.history['gen_loss_minibatch'].append(new_gen_loss)
 				self.history['disc_loss_minibatch'].append(new_disc_loss)
 
-			st_dir_norm = self.valid()
-
 			self.history['gen_loss'].append(gen_loss / (t + 1))
 			self.history['disc_loss'].append(disc_loss / (t + 1))
-			self.history['steepest_dir_norm'].append(st_dir_norm)
 
 			self.cur_epoch += 1
 
@@ -263,13 +260,6 @@ class TrainLoop(object):
 
 		return loss_G.data[0], loss_d
 
-	def valid(self):
-
-		self.model.eval()
-		steepest_dir_norm = self.compute_steepest_direction_norm()
-
-		return steepest_dir_norm
-
 	def checkpointing(self):
 
 		# Checkpointing
@@ -360,55 +350,3 @@ class TrainLoop(object):
 			self.Q[i] = self.alpha * reward[i] + (1 - self.alpha) * self.Q[i]
 
 		self.proba = torch.nn.functional.softmax(15 * Variable(torch.FloatTensor(self.Q)), dim=0).data.cpu().numpy()
-
-	def compute_steepest_direction_norm(self):
-		self.model.train()
-
-		z_ = torch.randn(128, 100).view(-1, 100, 1, 1)
-
-		y_real_ = torch.ones(128)
-
-		if self.cuda_mode:
-			z_ = z_.cuda()
-			y_real_ = y_real_.cuda()
-
-		z_ = Variable(z_, requires_grad=False)
-		y_real_ = Variable(y_real_)
-
-		grads_list = []
-
-		for disc in self.disc_list:
-			self.model.zero_grad()
-			out = self.model.forward(z_)
-			loss = F.binary_cross_entropy(disc.forward(out).squeeze(), y_real_)
-			grads_list.append(self.get_gen_grads(loss))
-
-		grad_sum = 0.0
-
-		for weight_grad in zip(self.proba, grads_list):
-			try:
-				grad_sum += float(weight_grad[0]) * weight_grad[1]
-			except TypeError:
-				grad_sum = float(weight_grad[0]) * weight_grad[1]
-
-		return float(grad_sum.norm(2).data[0])
-
-	def get_gen_grads(self, loss_):
-		grads = torch.autograd.grad(outputs=loss_, inputs=self.model.parameters())
-		self.model.zero_grad()
-		for params_grads in grads:
-
-			try:
-				grads_ = torch.cat([grads_, params_grads.view(-1)], 0)
-			except:
-				grads_ = params_grads.view(-1)
-
-		return grads_
-
-	def get_gen_grads_norm(self, loss_):
-		norm = 0.0
-		self.model.zero_grad()
-		grads = torch.autograd.grad(outputs=loss_, inputs=self.model.parameters())
-		for params_grads in grads:
-			norm += params_grads.norm(2).data[0] ** 2
-		return np.sqrt(norm)
