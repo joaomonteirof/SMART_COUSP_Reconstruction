@@ -49,10 +49,12 @@ def save_gif(data, file_name, enhance):
 	frames[0].save(file_name, save_all=True, append_images=frames[1:])
 
 
-def plot_learningcurves(history, *keys):
+def plot_learningcurves(history, keys):
 
-	for key in keys:
+	for i, key in enumerate(keys):
+		plt.figure(i+1)
 		plt.plot(history[key])
+		plt.title(key)
 	
 	plt.show()
 
@@ -71,7 +73,7 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 	args.cuda = True if args.ngpus>0 and torch.cuda.is_available() else False
 
-	data_set = Loader(input_file=args.input_data_path+'input_train_3.hdf', output_file=args.targets_data_path+'output_train_3.hdf')
+	data_set = Loader(input_file_name=args.input_data_path+'input_train_3.hdf', output_file_name=args.targets_data_path+'output_train_3.hdf')
 	#data_set = Loader(input_file=args.input_data_path+'input_valid.hdf', output_file=args.targets_data_path+'output_valid.hdf')
 
 	torch.manual_seed(args.seed)
@@ -81,6 +83,7 @@ if __name__ == '__main__':
 	#model = models_zoo.model(args.cuda)
 	#model = models_zoo.small_model(args.cuda)
 	#model = models_zoo.model_cnn3d(args.cuda)
+	#model = models_zoo.model_3d_lstm(args.cuda)
 	model = models_zoo.model_3d_lstm(args.cuda)
 
 	if args.ngpus > 1:
@@ -94,8 +97,7 @@ if __name__ == '__main__':
 	history = ckpt['history']
 
 	if not args.no_plots:
-		plot_learningcurves(history, 'train_loss')
-		plot_learningcurves(history, 'valid_loss')
+		plot_learningcurves(history, list(history.keys()))
 
 	model.load_state_dict(ckpt['model_state'])
 	test_model(model=model, data_loader=data_set, n_tests=args.n_tests, cuda_mode=args.cuda, enhancement=args.enhance)
