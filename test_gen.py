@@ -14,7 +14,7 @@ from PIL import Image, ImageEnhance
 
 import torchvision.transforms as transforms
 
-def test_model(model, data_loader, n_tests, cuda_mode, enhancement):
+def test_model(model, generator, data_loader, n_tests, cuda_mode, enhancement):
 
 	model.eval()
 
@@ -35,8 +35,9 @@ def test_model(model, data_loader, n_tests, cuda_mode, enhancement):
 
 		frames_list = []
 
-		for i in range(out.size(1)):
-			gen_frame = self.generator(out[:,i,:].squeeze().contiguous())
+		for j in range(out.size(1)):
+
+			gen_frame = generator(out[:,j,:].contiguous())
 			frames_list.append(gen_frame.cpu().data.squeeze(0))
 
 		sample_rec = torch.cat(frames_list, 0)
