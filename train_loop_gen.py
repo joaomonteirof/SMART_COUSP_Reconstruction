@@ -115,13 +115,14 @@ class TrainLoop(object):
 		frames_list = []
 
 		for i in range(out.size(1)):
+
 			gen_frame = self.generator(out[:,i,:].squeeze().contiguous())
-			frames_list.append(gen_frame)
-			loss_overall += torch.nn.functional.mse_loss(gen_frame, y[:,i,:].squeeze())
+			frames_list.append(gen_frame.squeeze())
+			loss_overall += torch.nn.functional.mse_loss(gen_frame, y[:,i,:])
 
 		loss_diff = 0
 		for i in range(1, out.size(1)):
-			loss_diff += torch.nn.functional.mse_loss((frames_list[i]-frames_list[i-1]), (y[:,i,:].squeeze() - y[:,i-1,:].squeeze()))
+			loss_diff += torch.nn.functional.mse_loss((frames_list[i]-frames_list[i-1]), (y[:,i,:] - y[:,i-1,:]))
 
 		loss = loss_diff + loss_overall
 
@@ -148,7 +149,7 @@ class TrainLoop(object):
 		loss = 0
 
 		for i in range(out.size(1)):
-			gen_frame = self.generator(out[:,i,:].squeeze().contiguous())
+			gen_frame = self.generator(out[:,i,:].squeeze().contiguous()).squeeze()
 			loss += torch.nn.functional.mse_loss(gen_frame, y[:,i,:].squeeze())
 
 		return loss.data[0]
