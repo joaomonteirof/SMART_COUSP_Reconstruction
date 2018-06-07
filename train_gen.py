@@ -40,7 +40,8 @@ torch.manual_seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
-model = models_zoo.model_3d_lstm_gen(args.cuda)
+#model = models_zoo.model_3d_lstm_gen(args.cuda)
+model = models_zoo.model_3d_gen(args.cuda)
 generator = Generator().eval()
 
 gen_state = torch.load(args.generator_path, map_location=lambda storage, loc: storage)
