@@ -50,6 +50,7 @@ generator.load_state_dict(gen_state['model_state'])
 if args.cuda:
 	model = model.cuda()
 	generator = generator.cuda()
+	torch.backends.cudnn.benchmark=True
 
 optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
 

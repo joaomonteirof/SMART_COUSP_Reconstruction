@@ -91,7 +91,8 @@ if __name__ == '__main__':
 	if args.cuda:
 		torch.cuda.manual_seed(args.seed)
 
-	model = models_zoo.model_3d_lstm_gen(args.cuda)
+	#model = models_zoo.model_3d_lstm_gen(args.cuda)
+	model = models_zoo.model_3d_gen(args.cuda)
 	generator = Generator().eval()
 
 	ckpt = torch.load(args.cp_path, map_location = lambda storage, loc: storage)
