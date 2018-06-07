@@ -102,8 +102,6 @@ class TrainLoop(object):
 
 		x, y = batch
 
-		y = y.view(y.size(0), y.size(3), y.size(1), y.size(2))
-
 		if self.cuda_mode:
 			x = x.cuda()
 			y = y.cuda()
@@ -137,8 +135,6 @@ class TrainLoop(object):
 		self.model.eval()
 
 		x, y = batch
-
-		y = y.view(y.size(0), y.size(3), y.size(1), y.size(2))
 
 		if self.cuda_mode:
 			x = x.cuda()

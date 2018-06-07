@@ -29,7 +29,7 @@ class Loader(Dataset):
 		if not self.out_file: self.out_file = h5py.File(self.output_file_name, 'r')
 		out_samples = (self.out_file['data'][index]-0.5)/0.5
 
-		return torch.from_numpy(in_samples).float(), torch.from_numpy(out_samples).float()
+		return torch.from_numpy(in_samples).float(), torch.from_numpy(out_samples).float().view(out_samples.shape[2], out_samples.shape[0], out_samples.shape[1])
 
 	def __len__(self):
 		return self.len
@@ -62,7 +62,7 @@ class Loader_manyfiles(Dataset):
 		out_samples = (out_file['data'][index]-0.5)/0.5
 		out_file.close()
 
-		return torch.from_numpy(in_samples).float(), torch.from_numpy(out_samples).float()
+		return torch.from_numpy(in_samples).float(), torch.from_numpy(out_samples).float().view(out_samples.shape[2], out_samples.shape[0], out_samples.shape[1])
 
 	def __len__(self):
 		return self.total_len
