@@ -509,7 +509,7 @@ class model_3d_gen(nn.Module):
 
 		x = self.features_2d(x).view(x.size(0), 1, 40, 30, 30)
 
-		x = self.features_3d(x).squeeze()
+		x = self.features_3d(x).squeeze(1)
 
 		x = x.view(x.size(1), x.size(0), -1)
 

@@ -140,4 +140,4 @@ if __name__ == '__main__':
 		plot_learningcurves(history, list(history.keys()))
 
 	test_model(model=model, n_tests=args.n_tests, cuda_mode=args.cuda)
-	save_samples(generator=model, cp_name=args.cp_path.split('/')[-1].split('.')[0], prefix='mnist', fig_size=(10, 10), nc=1, im_size=30, cuda_mode=args.cuda, enhance=False)
+	save_samples(generator=model, cp_name=args.cp_path.split('/')[-1].split('.')[0], prefix='mnist', fig_size=(30, 30), nc=1, im_size=30, cuda_mode=args.cuda, enhance=False)
