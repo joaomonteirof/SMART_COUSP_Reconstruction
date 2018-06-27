@@ -10,10 +10,9 @@ import torch.optim as optim
 
 # Training settings
 parser = argparse.ArgumentParser(description='Online transfer learning for emotion recognition tasks')
-parser.add_argument('--batch-size', type=int, default=128, metavar='N', help='input batch size for training (default: 128)')
+parser.add_argument('--batch-size', type=int, default=64, metavar='N', help='input batch size for training (default: 64)')
 parser.add_argument('--valid-batch-size', type=int, default=128, metavar='N', help='input batch size for testing (default: 128)')
 parser.add_argument('--epochs', type=int, default=200, metavar='N', help='number of epochs to train (default: 200)')
-parser.add_argument('--patience', type=int, default=10, metavar='N', help='How many epochs without improvement to wait before reducing the LR (default: 10)')
 parser.add_argument('--lr', type=float, default=0.0003, metavar='LR', help='learning rate (default: 0.0002)')
 parser.add_argument('--beta1', type=float, default=0.5, metavar='beta1', help='Adam beta 1 (default: 0.5)')
 parser.add_argument('--beta2', type=float, default=0.999, metavar='beta2', help='Adam beta 2 (default: 0.99)')
@@ -29,7 +28,7 @@ parser.add_argument('--n-workers', type=int, default=2)
 args = parser.parse_args()
 args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
-train_data_set = Loader(input_file=args.input_data_path+'input_train.hdf', output_file=args.targets_data_path+'output_train.hdf')
+train_data_set = Loader(input_file_name=args.input_data_path+'input_train.hdf', output_file_name=args.targets_data_path+'output_train.hdf')
 #train_data_set = Loader_manyfiles(input_file_base_name=args.input_data_path+'input_train', output_file_base_name=args.targets_data_path+'output_train', n_files=4)
 valid_data_set = Loader(input_file_name=args.input_data_path+'input_valid.hdf', output_file_name=args.targets_data_path+'output_valid.hdf')
 
@@ -59,4 +58,4 @@ trainer = TrainLoop(model, generator, optimizer, train_loader, valid_loader, che
 
 print('Cuda Mode is: {}'.format(args.cuda))
 
-trainer.train(n_epochs=args.epochs, patience = args.patience, save_every = args.save_every)
+trainer.train(n_epochs=args.epochs, save_every = args.save_every)

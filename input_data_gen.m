@@ -1,8 +1,8 @@
 clear all
 clc
 
-video_samples_file = 'data/targets/test.hdf';
-output_file_name = 'data/input/test.hdf';
+video_samples_file = 'data/targets/output_train.hdf';
+output_file_name = 'data/input/input_train.hdf';
 
 %% Load bouncing balls data
 hinfo = hdf5info(video_samples_file);

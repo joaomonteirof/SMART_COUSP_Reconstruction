@@ -38,7 +38,7 @@ class TrainLoop(object):
 		else:
 			self.initialize_params()
 
-	def train(self, n_epochs=1, patience = 5, save_every=10):
+	def train(self, n_epochs=1, save_every=10):
 
 		while self.cur_epoch < n_epochs:
 			print('Epoch {}/{}'.format(self.cur_epoch+1, n_epochs))
@@ -86,11 +86,6 @@ class TrainLoop(object):
 				if self.cur_epoch % save_every == 0:
 					self.checkpointing()
 
-			if self.its_without_improv > patience:
-				#self.update_lr()
-				self.its_without_improv = 0
-
-
 		# saving final models
 		print('Saving final model...')
 		self.checkpointing()
@@ -118,12 +113,11 @@ class TrainLoop(object):
 
 			gen_frame = self.generator(out[:,i,:].squeeze().contiguous())
 			frames_list.append(gen_frame.squeeze())
-			loss_overall += torch.nn.functional.mse_loss(gen_frame, y[:,i,:])
-
+			loss_overall += torch.nn.functional.mse_loss(frames_list[-1], y[:,i,:].squeeze())
 
 		loss_diff = 0
 		for i in range(1, out.size(1)):
-			loss_diff += torch.nn.functional.mse_loss((frames_list[i]-frames_list[i-1]), (y[:,i,:] - y[:,i-1,:]))
+			loss_diff += torch.nn.functional.mse_loss((frames_list[i]-frames_list[i-1]), (y[:,i,:].squeeze() - y[:,i-1,:].squeeze()))
 
 		loss = loss_diff + loss_overall
 
