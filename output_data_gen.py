@@ -142,7 +142,7 @@ if __name__ == "__main__":
 	dat=[]
 	for i in range(args.n_samples):
 		sample=bounce_mat(res=args.im_size, n=args.n_balls, T=args.n_frames)
-		dat.append( sample.reshape([sample.shape[1],sample.shape[2],sample.shape[0]]) )
+		dat.append( np.moveaxis(sample, 0, -1) )
 		print(dat[i].shape)
 		print(i)
 

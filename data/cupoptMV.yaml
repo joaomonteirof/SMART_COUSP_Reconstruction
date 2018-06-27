@@ -6,8 +6,8 @@ streakShift3: [0, 0]
 streakShift4: [0, 0]
 
 # input files
-video_samples_file: "./data/targets/output_train_4.hdf"
-output_file_name: "./data/input/input_train_4.hdf"
+video_samples_file: "./data/targets/test.hdf"
+output_file_name: "./data/input/test.hdf"
 t1to2File: "t1to2.txt"
 t1to3File: "t1to3.txt"
 t1to4File: "t1to4.txt"
