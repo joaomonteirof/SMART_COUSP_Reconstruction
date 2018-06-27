@@ -528,3 +528,51 @@ class model_3d_gen(nn.Module):
 		x = F.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
 
 		return x.view(batch_size, seq_size, -1)
+
+class model_gen(nn.Module):
+	def __init__(self, cuda_mode):
+		super(model_gen, self).__init__()
+
+		self.cuda_mode = cuda_mode
+
+		## Considering (30, 69) inputs
+
+		self.features = nn.Sequential(
+			nn.Conv2d(1, 1024, kernel_size=(5,10), padding=(2,2), stride=(2,2), bias=False),
+			nn.BatchNorm2d(1024),
+			nn.ReLU(),
+			nn.Conv2d(1024, 512, kernel_size=(5,5), padding=(2,2), stride=(2,2), bias=False),
+			nn.BatchNorm2d(512),
+			nn.ReLU(),
+			nn.Conv2d(512, 256, kernel_size=(5,5), padding=(2,2), stride=(2,2), bias=False),
+			nn.BatchNorm2d(256),
+			nn.ReLU(),
+			nn.Conv2d(256, 40, kernel_size=(5,5), padding=(2,2), stride=(1,2), bias=False),
+			nn.BatchNorm2d(40),
+			nn.ReLU() )
+
+		self.lstm = nn.LSTM(16, 256, 2, bidirectional=True, batch_first=False)
+
+		self.fc = nn.Linear(256*2, 100)
+
+	def forward(self, x):
+
+		x = self.features(x)
+
+		x = x.view(x.size(1), x.size(0), -1)
+
+		batch_size = x.size(1)
+		seq_size = x.size(0)
+
+		h0 = Variable(torch.zeros(4, batch_size, 256))
+		c0 = Variable(torch.zeros(4, batch_size, 256))
+
+		if self.cuda_mode:
+			h0 = h0.cuda()
+			c0 = c0.cuda()
+
+		x, h_c = self.lstm(x, (h0, c0))
+
+		x = F.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
+
+		return x.view(batch_size, seq_size, -1)

@@ -120,7 +120,6 @@ class TrainLoop(object):
 			frames_list.append(gen_frame.squeeze())
 			loss_overall += torch.nn.functional.mse_loss(gen_frame, y[:,i,:])
 
-		'''
 
 		loss_diff = 0
 		for i in range(1, out.size(1)):
@@ -132,13 +131,6 @@ class TrainLoop(object):
 		self.optimizer.step()
 
 		return loss.data[0], loss_overall.data[0]/(len(frames_list)), loss_diff.data[0]/(len(frames_list)-1)
-
-		'''
-
-		loss_overall.backward()
-		self.optimizer.step()
-
-		return loss_overall.data[0]/(len(frames_list)), loss_overall.data[0]/(len(frames_list)), 0.0
 
 	def valid(self, batch):
 

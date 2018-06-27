@@ -29,8 +29,8 @@ parser.add_argument('--n-workers', type=int, default=2)
 args = parser.parse_args()
 args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
-#train_data_set = Loader(input_file=args.input_data_path+'input_train.hdf', output_file=args.targets_data_path+'output_train.hdf')
-train_data_set = Loader_manyfiles(input_file_base_name=args.input_data_path+'input_train', output_file_base_name=args.targets_data_path+'output_train', n_files=4)
+train_data_set = Loader(input_file=args.input_data_path+'input_train.hdf', output_file=args.targets_data_path+'output_train.hdf')
+#train_data_set = Loader_manyfiles(input_file_base_name=args.input_data_path+'input_train', output_file_base_name=args.targets_data_path+'output_train', n_files=4)
 valid_data_set = Loader(input_file_name=args.input_data_path+'input_valid.hdf', output_file_name=args.targets_data_path+'output_valid.hdf')
 
 train_loader = DataLoader(train_data_set, batch_size=args.batch_size, shuffle=False, num_workers=args.n_workers)
@@ -41,7 +41,8 @@ if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
 #model = models_zoo.model_3d_lstm_gen(args.cuda)
-model = models_zoo.model_3d_gen(args.cuda)
+#model = models_zoo.model_3d_gen(args.cuda)
+model = models_zoo.model_gen(args.cuda)
 generator = Generator().eval()
 
 gen_state = torch.load(args.generator_path, map_location=lambda storage, loc: storage)

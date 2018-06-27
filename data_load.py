@@ -21,15 +21,15 @@ class Loader(Dataset):
 	def __getitem__(self, index):
 
 		if not self.in_file: self.in_file = h5py.File(self.input_file_name, 'r')
-		in_samples = self.in_file['input_samples'][:,:,:,index]
-		in_samples = in_samples.reshape([in_samples.shape[2], in_samples.shape[1], in_samples.shape[0]])
+		in_samples = self.in_file['input_samples'][:,:,index]
+		in_samples = torch.from_numpy().float().unsqueeze(0)
 
 		self.in_file.close()
 
 		if not self.out_file: self.out_file = h5py.File(self.output_file_name, 'r')
-		out_samples = (self.out_file['data'][index]-0.5)/0.5
+		out_samples = (torch.from_numpy(self.out_file['data'][index]).float().view([40, 30, 30]) - 0.5) / 0.5
 
-		return torch.from_numpy(in_samples).float(), torch.from_numpy(out_samples).float().view(out_samples.shape[2], out_samples.shape[0], out_samples.shape[1])
+		return in_samples, out_samples
 
 	def __len__(self):
 		return self.len
@@ -54,15 +54,15 @@ class Loader_manyfiles(Dataset):
 		index = index % self.len_per_file
 
 		in_file = h5py.File(self.in_file_base_name+'_'+str(file_)+'.hdf', 'r')
-		in_samples = in_file['input_samples'][:,:,:,index]
-		in_samples = in_samples.reshape([in_samples.shape[2], in_samples.shape[1], in_samples.shape[0]])
+		in_samples = self.in_file['input_samples'][:,:,index]
+		in_samples = torch.from_numpy().float().unsqueeze(0)
 		in_file.close()
 
 		out_file = h5py.File(self.out_file_base_name+'_'+str(file_)+'.hdf', 'r')
-		out_samples = (out_file['data'][index]-0.5)/0.5
+		out_samples = (torch.from_numpy(self.out_file['data'][index]).float().view([40, 30, 30]) - 0.5) / 0.5
 		out_file.close()
 
-		return torch.from_numpy(in_samples).float(), torch.from_numpy(out_samples).float().view(out_samples.shape[2], out_samples.shape[0], out_samples.shape[1])
+		return in_samples, out_samples
 
 	def __len__(self):
 		return self.total_len
