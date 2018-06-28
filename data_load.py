@@ -27,7 +27,8 @@ class Loader(Dataset):
 		self.in_file.close()
 
 		if not self.out_file: self.out_file = h5py.File(self.output_file_name, 'r')
-		out_samples = (torch.from_numpy(self.out_file['data'][index]).float().view([40, 30, 30]) - 0.5) / 0.5
+		out_samples = np.moveaxis(self.out_file['data'][index], -1, 0)
+		out_samples = (torch.from_numpy(out_samples).float() - 0.5) / 0.5
 
 		return in_samples, out_samples
 
@@ -59,7 +60,8 @@ class Loader_manyfiles(Dataset):
 		in_file.close()
 
 		out_file = h5py.File(self.out_file_base_name+'_'+str(file_)+'.hdf', 'r')
-		out_samples = (torch.from_numpy(self.out_file['data'][index]).float().view([40, 30, 30]) - 0.5) / 0.5
+		out_samples = np.moveaxis(self.out_file['data'][index], -1, 0)
+		out_samples = (torch.from_numpy(out_samples).float() - 0.5) / 0.5
 		out_file.close()
 
 		return in_samples, out_samples

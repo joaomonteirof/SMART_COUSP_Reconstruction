@@ -24,7 +24,7 @@ def test_model(model, generator, data_loader, n_tests, cuda_mode, enhancement):
 		img_idx = np.random.randint(len(data_loader))
 		sample_in, sample_out = data_loader[img_idx]
 
-		sample_in = sample_in.view(1, sample_in.size(0), sample_in.size(1), sample_in.size(2))
+		sample_in = sample_in.unsqueeze(0)
 
 		if cuda_mode:
 			sample_in = sample_in.cuda()
@@ -84,7 +84,7 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 	args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
-	data_set = Loader(input_file_name=args.input_data_path+'input_train_3.hdf', output_file_name=args.targets_data_path+'output_train_3.hdf')
+	data_set = Loader(input_file_name=args.input_data_path+'input_train.hdf', output_file_name=args.targets_data_path+'output_train.hdf')
 	#data_set = Loader(input_file=args.input_data_path+'input_valid.hdf', output_file=args.targets_data_path+'output_valid.hdf')
 
 	torch.manual_seed(args.seed)
@@ -92,7 +92,8 @@ if __name__ == '__main__':
 		torch.cuda.manual_seed(args.seed)
 
 	#model = models_zoo.model_3d_lstm_gen(args.cuda)
-	model = models_zoo.model_3d_gen(args.cuda)
+	#model = models_zoo.model_3d_gen(args.cuda)
+	model = models_zoo.model_gen(args.cuda)
 	generator = Generator().eval()
 
 	ckpt = torch.load(args.cp_path, map_location = lambda storage, loc: storage)

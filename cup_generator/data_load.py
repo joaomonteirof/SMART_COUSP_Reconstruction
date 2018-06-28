@@ -21,7 +21,7 @@ class Loader(Dataset):
 
 		if not self.open_file: self.open_file = h5py.File(self.hdf5_name, 'r')
 
-		scene = torch.from_numpy(self.open_file['data'][index]).float().view([40, 30, 30])
+		scene = torch.from_numpy(np.moveaxis(self.open_file['data'][index], -1, 0)).float()
 		idx = np.random.randint(scene.size(0))
 		img = scene[idx]
 		img = (img - 0.5) / 0.5
