@@ -147,7 +147,7 @@ class TrainLoop(object):
 			gen_frame = self.generator(out[:,i,:].squeeze().contiguous()).squeeze()
 			loss += torch.nn.functional.mse_loss(gen_frame, y[:,i,:].squeeze())
 
-		return loss.data[0]
+		return loss.data[0]/(i+1)
 
 	def checkpointing(self):
 

@@ -25,6 +25,7 @@ def test_model(model, generator, data_loader, n_tests, cuda_mode, enhancement):
 		sample_in, sample_out = data_loader[img_idx]
 
 		sample_in = sample_in.unsqueeze(0)
+		to_pil(sample_in[0]).save(str(i+1)+'_streaking.png')
 
 		if cuda_mode:
 			sample_in = sample_in.cuda()
@@ -79,13 +80,13 @@ if __name__ == '__main__':
 	parser.add_argument('--n-tests', type=int, default=4, metavar='N', help='number of samples to  (default: 64)')
 	parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
 	parser.add_argument('--no-plots', action='store_true', default=False, help='Disables plot of train/test losses')
-	parser.add_argument('--enhance', action='store_true', default=True, help='Enables enhancement')
+	parser.add_argument('--enhance', action='store_true', default=False, help='Enables enhancement')
 	parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
 	args = parser.parse_args()
 	args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
 	data_set = Loader(input_file_name=args.input_data_path+'input_train.hdf', output_file_name=args.targets_data_path+'output_train.hdf')
-	#data_set = Loader(input_file=args.input_data_path+'input_valid.hdf', output_file=args.targets_data_path+'output_valid.hdf')
+	#data_set = Loader(input_file_name=args.input_data_path+'input_valid.hdf', output_file_name=args.targets_data_path+'output_valid.hdf')
 
 	torch.manual_seed(args.seed)
 	if args.cuda:
