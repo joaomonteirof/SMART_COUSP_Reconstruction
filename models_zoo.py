@@ -538,17 +538,17 @@ class model_gen(nn.Module):
 		## Considering (30, 69) inputs
 
 		self.features = nn.Sequential(
-			nn.Conv2d(1, 1024, kernel_size=(5,10), padding=(2,2), stride=(2,2), bias=False),
+			nn.Conv2d(1, 1024, kernel_size=(5,10), padding=(2,2), stride=(2,3), bias=False),
 			nn.BatchNorm2d(1024),
 			nn.ReLU(),
-			nn.Conv2d(1024, 512, kernel_size=(5,5), padding=(2,2), stride=(2,2), bias=False),
+			nn.Conv2d(1024, 512, kernel_size=(5,5), padding=(2,2), stride=(2,3), bias=False),
 			nn.BatchNorm2d(512),
 			nn.ReLU(),
-			nn.Conv2d(512, 256, kernel_size=(5,5), padding=(2,2), stride=(2,2), bias=False),
+			nn.Conv2d(512, 256, kernel_size=(5,5), padding=(1,2), stride=(2,2), bias=False),
 			nn.BatchNorm2d(256),
 			nn.ReLU(),
-			nn.Conv2d(256, 40, kernel_size=(5,5), padding=(2,2), stride=(1,2), bias=False),
-			nn.BatchNorm2d(40),
+			nn.Conv2d(256, 30, kernel_size=(5,5), padding=(0,2), stride=(2,2), bias=False),
+			nn.BatchNorm2d(30),
 			nn.ReLU() )
 
 		self.lstm = nn.LSTM(16, 256, 2, bidirectional=True, batch_first=False)
