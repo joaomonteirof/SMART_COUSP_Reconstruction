@@ -139,13 +139,20 @@ if __name__ == "__main__":
 	parser.add_argument('--file-name', type=str, default='train.hdf', metavar='Path', help='Output file name')
 	args = parser.parse_args()
 
-	dat=[]
+	hdf = h5py.File(args.output_path+args.file_name, 'w')
+
 	for i in range(args.n_samples):
 		sample=bounce_mat(res=args.im_size, n=args.n_balls, T=args.n_frames)
-		dat.append( np.moveaxis(sample, 0, -1) )
-		print(dat[i].shape)
+		dat = np.expand_dims( np.moveaxis(sample, 0, -1), axis=0 )
+
+		try:
+			hdf['data'].resize(hdf['data'].shape[0]+1, axis=0)
+			hdf['data'][-1:]=dat
+
+		except KeyError:
+			hdf.create_dataset('data', data=dat, maxshape=(None, args.im_size, args.im_size, args.n_frames))
+
 		print(i)
 
-	hdf5 = h5py.File(args.output_path+args.file_name, 'w')
-	dataset = hdf5.create_dataset('data', data=np.asarray(dat))
-	hdf5.close()
+	print(hdf['data'].shape)
+	hdf.close()
