@@ -49,8 +49,8 @@ class model(nn.Module):
 		batch_size = x.size(1)
 		seq_size = x.size(0)
 
-		h0 = Variable(torch.zeros(2, batch_size, 30*30))
-		c0 = Variable(torch.zeros(2, batch_size, 30*30))
+		h0 = torch.zeros(2, batch_size, 30*30)
+		c0 = torch.zeros(2, batch_size, 30*30)
 
 		if self.cuda_mode:
 			h0 = h0.cuda()
@@ -60,7 +60,7 @@ class model(nn.Module):
 
 		x, _ = self.lstm_2(x, h_c)
 
-		x = F.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
+		x = torch.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
 
 		return x.view(batch_size, seq_size, -1)
 
@@ -114,8 +114,8 @@ class small_model(nn.Module):
 		batch_size = x.size(1)
 		seq_size = x.size(0)
 
-		h0 = Variable(torch.zeros(2, batch_size, 30*30))
-		c0 = Variable(torch.zeros(2, batch_size, 30*30))
+		h0 = torch.zeros(2, batch_size, 30*30)
+		c0 = torch.zeros(2, batch_size, 30*30)
 
 		if self.cuda_mode:
 			h0 = h0.cuda()
@@ -125,7 +125,7 @@ class small_model(nn.Module):
 
 		x, _ = self.lstm_2(x, h_c)
 
-		x = F.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
+		x = torch.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
 
 		return x.view(batch_size, seq_size, -1)
 
@@ -217,8 +217,8 @@ class encoder(nn.Module):
 		batch_size = x.size(1)
 		seq_size = x.size(0)
 
-		h0 = Variable(torch.zeros(1, batch_size, 30*30))
-		c0 = Variable(torch.zeros(1, batch_size, 30*30))
+		h0 = torch.zeros(1, batch_size, 30*30)
+		c0 = torch.zeros(1, batch_size, 30*30)
 
 		if self.cuda_mode:
 			h0 = h0.cuda()
@@ -246,7 +246,7 @@ class decoder(nn.Module):
 
 		x, _ = self.lstm_2(x, h)
 
-		x = F.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
+		x = torch.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
 
 		return x.view(batch_size, seq_size, -1)
 
@@ -297,7 +297,7 @@ class model_cnn3d(nn.Module):
 
 		x = x.view(x.size(0), x.size(2), x.size(3), x.size(4))
 
-		x = F.tanh( self.out_conv(x) )
+		x = torch.tanh( self.out_conv(x) )
 
 		return x.view(x.size(0), x.size(1), -1)
 
@@ -375,8 +375,8 @@ class model_3d_lstm(nn.Module):
 		batch_size = x.size(1)
 		seq_size = x.size(0)
 
-		h0 = Variable(torch.zeros(2, batch_size, 30*30))
-		c0 = Variable(torch.zeros(2, batch_size, 30*30))
+		h0 = torch.zeros(2, batch_size, 30*30)
+		c0 = torch.zeros(2, batch_size, 30*30)
 
 		if self.cuda_mode:
 			h0 = h0.cuda()
@@ -386,7 +386,7 @@ class model_3d_lstm(nn.Module):
 
 		x, _ = self.lstm_2(x, h_c)
 
-		x = F.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
+		x = torch.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
 
 		return x.view(batch_size, seq_size, -1)
 
@@ -450,8 +450,8 @@ class model_3d_lstm_gen(nn.Module):
 		batch_size = x.size(1)
 		seq_size = x.size(0)
 
-		h0 = Variable(torch.zeros(2, batch_size, 30*30))
-		c0 = Variable(torch.zeros(2, batch_size, 30*30))
+		h0 = torch.zeros(2, batch_size, 30*30)
+		c0 = torch.zeros(2, batch_size, 30*30)
 
 		if self.cuda_mode:
 			h0 = h0.cuda()
@@ -461,7 +461,7 @@ class model_3d_lstm_gen(nn.Module):
 
 		x, _ = self.lstm_2(x, h_c)
 
-		x = F.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
+		x = torch.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
 
 		return x.view(batch_size, seq_size, -1)
 
@@ -516,8 +516,8 @@ class model_3d_gen(nn.Module):
 		batch_size = x.size(1)
 		seq_size = x.size(0)
 
-		h0 = Variable(torch.zeros(4, batch_size, 256))
-		c0 = Variable(torch.zeros(4, batch_size, 256))
+		h0 = torch.zeros(4, batch_size, 256)
+		c0 = torch.zeros(4, batch_size, 256)
 
 		if self.cuda_mode:
 			h0 = h0.cuda()
@@ -525,7 +525,7 @@ class model_3d_gen(nn.Module):
 
 		x, h_c = self.lstm(x, (h0, c0))
 
-		x = F.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
+		x = torch.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
 
 		return x.view(batch_size, seq_size, -1)
 
@@ -564,8 +564,8 @@ class model_gen(nn.Module):
 		batch_size = x.size(1)
 		seq_size = x.size(0)
 
-		h0 = Variable(torch.zeros(4, batch_size, 256))
-		c0 = Variable(torch.zeros(4, batch_size, 256))
+		h0 = torch.zeros(4, batch_size, 256)
+		c0 = torch.zeros(4, batch_size, 256)
 
 		if self.cuda_mode:
 			h0 = h0.cuda()
@@ -573,6 +573,6 @@ class model_gen(nn.Module):
 
 		x, h_c = self.lstm(x, (h0, c0))
 
-		x = F.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
+		x = torch.tanh( self.fc( x.view(batch_size*seq_size, -1) ) )
 
 		return x.view(batch_size, seq_size, -1)

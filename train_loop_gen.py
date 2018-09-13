@@ -1,5 +1,4 @@
 import torch
-from torch.autograd import Variable
 import torch.nn.init as init
 
 import numpy as np
@@ -101,9 +100,6 @@ class TrainLoop(object):
 			x = x.cuda()
 			y = y.cuda()
 
-		x = Variable(x)
-		y = Variable(y, requires_grad=False)
-
 		out = self.model.forward(x)
 
 		loss_overall = 0
@@ -124,7 +120,7 @@ class TrainLoop(object):
 		loss.backward()
 		self.optimizer.step()
 
-		return loss.data[0], loss_overall.data[0]/(len(frames_list)), loss_diff.data[0]/(len(frames_list)-1)
+		return loss.item(), loss_overall.item()/(len(frames_list)), loss_diff.item()/(len(frames_list)-1)
 
 	def valid(self, batch):
 
@@ -136,9 +132,6 @@ class TrainLoop(object):
 			x = x.cuda()
 			y = y.cuda()
 
-		x = Variable(x)
-		y = Variable(y, requires_grad=False)
-
 		out = self.model.forward(x)
 
 		loss = 0
@@ -147,7 +140,7 @@ class TrainLoop(object):
 			gen_frame = self.generator(out[:,i,:].squeeze().contiguous()).squeeze()
 			loss += torch.nn.functional.mse_loss(gen_frame, y[:,i,:].squeeze())
 
-		return loss.data[0]/(i+1)
+		return loss.item()/(i+1)
 
 	def checkpointing(self):
 
@@ -184,14 +177,14 @@ class TrainLoop(object):
 	def print_params_norms(self):
 		norm = 0.0
 		for params in list(self.model.parameters()):
-			norm+=params.norm(2).data[0]
+			norm+=params.norm(2).item()
 		print('Sum of weights norms: {}'.format(norm))
 
 
 	def print_grad_norms(self):
 		norm = 0.0
 		for params in list(self.model.parameters()):
-			norm+=params.grad.norm(2).data[0]
+			norm+=params.grad.norm(2).item()
 		print('Sum of grads norms: {}'.format(norm))
 
 	def initialize_params(self):
