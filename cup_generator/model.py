@@ -19,7 +19,7 @@ class Generator(torch.nn.Module):
 
 		# Batch normalization
 		bn_name = 'bn0'
-		self.linear.add_module(bn_name, torch.nn.BatchNorm1d(2*2*1024))
+		self.linear.add_module(bn_name, torch.nn.BatchNorm1d(1024))
 
 		# Activation
 		act_name = 'act0'
