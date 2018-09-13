@@ -25,7 +25,7 @@ parser.add_argument('--beta2', type=float, default=0.999, metavar='lambda', help
 parser.add_argument('--ndiscriminators', type=int, default=8, help='Number of discriminators. Default=8')
 parser.add_argument('--checkpoint-epoch', type=int, default=None, metavar='N', help='epoch to load for checkpointing. If None, training starts from scratch')
 parser.add_argument('--checkpoint-path', type=str, default=None, metavar='Path', help='Path for checkpointing')
-parser.add_argument('--data-path', type=str, default='../data/targets/output_train_1.hdf', metavar='Path', help='Path to hdf file containing stacked MNIST. Can be generated with gen_data.py')
+parser.add_argument('--data-path', type=str, default='../data/targets/output_train.hdf', metavar='Path', help='Path to hdf file containing stacked MNIST. Can be generated with gen_data.py')
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
 parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
 parser.add_argument('--save-every', type=int, default=5, metavar='N', help='how many epochs to wait before logging training status. Default is 5')
