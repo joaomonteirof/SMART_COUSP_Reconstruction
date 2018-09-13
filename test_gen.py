@@ -85,8 +85,8 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 	args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
-	data_set = Loader(input_file_name=args.input_data_path+'input_train.hdf', output_file_name=args.targets_data_path+'output_train.hdf')
-	#data_set = Loader(input_file_name=args.input_data_path+'input_valid.hdf', output_file_name=args.targets_data_path+'output_valid.hdf')
+	#data_set = Loader(input_file_name=args.input_data_path+'input_train.hdf', output_file_name=args.targets_data_path+'output_train.hdf')
+	data_set = Loader(input_file_name=args.input_data_path+'input_valid.hdf', output_file_name=args.targets_data_path+'output_valid.hdf')
 
 	torch.manual_seed(args.seed)
 	if args.cuda:

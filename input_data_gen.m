@@ -12,7 +12,11 @@ Data=permute(Data,[4, 2, 3, 1]);
 %% Set N: Frames dim1, Nx: Frames dim2, Nt: #frames, Np: ... 
 [N, D_x,D_y,D_t]=size(Data);
 
-C=randn(D_x, D_y);         %%%%%%%%%%%%%% rand mask pattern with Gaussian distribution
+%Rm=randn(D_x, D_y);         %%%%%%%%%%%%%% rand mask pattern with Gaussian distribution
+mask=load('mask.mat');
+Rm=mask.mask2;
+
+C=Rm;
 
 %% Loop over video samples to generate list of streak images and patterns
 
