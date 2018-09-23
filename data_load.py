@@ -21,7 +21,7 @@ class Loader(Dataset):
 	def __getitem__(self, index):
 
 		if not self.in_file: self.in_file = h5py.File(self.input_file_name, 'r')
-		in_samples = self.in_file['input_samples'][:,:,index].squeeze().T
+		in_samples = self.in_file['data'][index]
 		in_samples = torch.from_numpy(in_samples).float().unsqueeze(0)
 
 		self.in_file.close()
@@ -55,7 +55,7 @@ class Loader_manyfiles(Dataset):
 		index = index % self.len_per_file
 
 		in_file = h5py.File(self.in_file_base_name+'_'+str(file_)+'.hdf', 'r')
-		in_samples = self.in_file['input_samples'][:,:,index].squeeze().T
+		in_samples = self.in_file['data'][index]
 		in_samples = torch.from_numpy(in_samples).float().unsqueeze(0)
 		in_file.close()
 
