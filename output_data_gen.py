@@ -146,18 +146,19 @@ if __name__ == "__main__":
 
 	for i in range(args.n_samples):
 		sample=bounce_mat(res=args.im_size, n=args.n_balls, T=args.n_frames)
-		print(sample.shape)
 		sample = np.moveaxis(sample, 0, -1)
 		sample_repeated = np.repeat(sample, args.rep_times, axis=-1)
-		print(sample_repeated.shape)
 		dat = np.expand_dims(sample_repeated, axis=0)
-		print(dat.shape)
+
+		print(sample.max(), sample.min())
+
 		try:
 			hdf['data'].resize(hdf['data'].shape[0]+1, axis=0)
 			hdf['data'][-1:]=dat
 
 		except KeyError:
-			hdf.create_dataset('data', data=dat, maxshape=(None, args.im_size, args.im_size, args.n_frames*args.rep_times))
+			pass
+			#hdf.create_dataset('data', data=dat, maxshape=(None, args.im_size, args.im_size, args.n_frames*args.rep_times))
 
 		print(i)
 

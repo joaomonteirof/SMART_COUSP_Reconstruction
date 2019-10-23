@@ -338,4 +338,4 @@ class TrainLoop(object):
 		for i in range(len(self.Q)):
 			self.Q[i] = self.alpha * reward[i] + (1 - self.alpha) * self.Q[i]
 
-		self.proba = torch.nn.functional.softmax(15 * Variable(torch.FloatTensor(self.Q)), dim=0).data.cpu().numpy()
+		self.proba = torch.nn.functional.softmax(15 * torch.FloatTensor(self.Q), dim=0).data.cpu().numpy()

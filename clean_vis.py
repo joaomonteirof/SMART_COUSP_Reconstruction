@@ -28,10 +28,8 @@ class Loader(Dataset):
 		scene = torch.from_numpy(np.moveaxis(self.open_file['data'][index], -1, 0)).float()
 
 		idx = np.random.randint(scene.size(0))
-		img = scene#[idx:(idx+30)]
-		img = (img - 0.5) / 0.5
 
-		return img.unsqueeze(0)
+		return scene.unsqueeze(0)
 
 	def __len__(self):
 		return self.length

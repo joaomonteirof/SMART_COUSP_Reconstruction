@@ -26,13 +26,13 @@ class Generator(torch.nn.Module):
 		self.linear.add_module(act_name, torch.nn.ReLU())
 
 		# Hidden layers
-		num_filters = [1024, 1024, 512, 256]
+		num_filters = [1024, 1024, 512, 256, 128]
 		self.hidden_layer = torch.nn.Sequential()
 		for i in range(len(num_filters)):
 			# Deconvolutional layer
 			if i == 0:
 				deconv = nn.ConvTranspose2d(1024, num_filters[i], kernel_size=5, stride=2, padding=0)
-			elif i ==2:
+			elif i == 2 or i == 4:
 				deconv = nn.ConvTranspose2d(num_filters[i - 1], num_filters[i], kernel_size=4, stride=2, padding=1)
 			else:
 				deconv = nn.ConvTranspose2d(num_filters[i - 1], num_filters[i], kernel_size=4, stride=2, padding=0)
@@ -55,7 +55,7 @@ class Generator(torch.nn.Module):
 		# Output layer
 		self.output_layer = torch.nn.Sequential()
 		# Deconvolutional layer
-		out = torch.nn.ConvTranspose2d(256, 1, kernel_size=4, stride=2, padding=1)
+		out = torch.nn.ConvTranspose2d(128, 1, kernel_size=4, stride=2, padding=1)
 		self.output_layer.add_module('out', out)
 		# Initializer
 		nn.init.normal_(out.weight, mean=0.0, std=0.02)
@@ -74,17 +74,18 @@ class Discriminator(torch.nn.Module):
 	def __init__(self, optimizer, lr, betas, batch_norm=False):
 		super(Discriminator, self).__init__()
 
-		self.projection = nn.utils.weight_norm(nn.Conv2d(1, 1, kernel_size=8, stride=2, padding=3, bias=False), name="weight")
-		self.projection.weight_g.data.fill_(1)
+		self.projection = nn.Conv2d(1, 1, kernel_size=8, stride=2, padding=3, bias=False)
+		with torch.no_grad():
+			self.projection.weight.div_(torch.norm(self.projection.weight, keepdim=True))
 
 		# Hidden layers
 		self.hidden_layer = torch.nn.Sequential()
-		num_filters = [256, 512, 1024]
-		for i in range(3):
+		num_filters = [128, 256, 512, 1024]
+		for i in range(len(num_filters)):
 			# Convolutional layer
 			if i == 0:
-				conv = nn.Conv2d(1, num_filters[i], kernel_size=4, stride=3, padding=2)
-			elif i == 1:
+				conv = nn.Conv2d(1, num_filters[i], kernel_size=4, stride=2, padding=1)
+			elif i == 3:
 				conv = nn.Conv2d(num_filters[i - 1], num_filters[i], kernel_size=4, stride=3, padding=1)
 			else:
 				conv = nn.Conv2d(num_filters[i - 1], num_filters[i], kernel_size=4, stride=2, padding=1)
@@ -96,8 +97,8 @@ class Discriminator(torch.nn.Module):
 			nn.init.normal_(conv.weight, mean=0.0, std=0.02)
 			nn.init.constant_(conv.bias, 0.0)
 
-			# Batch normalization
 			if i != 0 and batch_norm:
+			# Batch normalization
 				bn_name = 'bn' + str(i + 1)
 				self.hidden_layer.add_module(bn_name, torch.nn.BatchNorm2d(num_filters[i]))
 
@@ -108,7 +109,7 @@ class Discriminator(torch.nn.Module):
 		# Output layer
 		self.output_layer = torch.nn.Sequential()
 		# Convolutional layer
-		out = nn.Conv2d(num_filters[i], 1, kernel_size=4, stride=2, padding=1)
+		out = nn.Conv2d(num_filters[i], 1, kernel_size=4, stride=3, padding=1)
 		self.output_layer.add_module('out', out)
 		# Initializer
 		nn.init.normal_(out.weight, mean=0.0, std=0.02)
