@@ -24,7 +24,7 @@ parser.add_argument('--beta2', type=float, default=0.999, metavar='lambda', help
 parser.add_argument('--ndiscriminators', type=int, default=8, help='Number of discriminators. Default=8')
 parser.add_argument('--checkpoint-epoch', type=int, default=None, metavar='N', help='epoch to load for checkpointing. If None, training starts from scratch')
 parser.add_argument('--checkpoint-path', type=str, default=None, metavar='Path', help='Path for checkpointing')
-parser.add_argument('--data-path', type=str, default='../data/targets/output_train.hdf', metavar='Path', help='Path to hdf file containing stacked MNIST. Can be generated with gen_data.py')
+parser.add_argument('--data-path', type=str, default=None, metavar='Path', help='optional path to hdf file containing data')
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
 parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
 parser.add_argument('--save-every', type=int, default=5, metavar='N', help='how many epochs to wait before logging training status. Default is 5')
@@ -35,9 +35,9 @@ parser.add_argument('--no-cuda', action='store_true', default=False, help='Disab
 parser.add_argument('--sgd', action='store_true', default=False, help='enables SGD - *MGD only* ')
 parser.add_argument('--job-id', type=str, default=None, help='Arbitrary id to be written on checkpoints')
 ### Data options
-parser.add_argument('--im-size', type=int, default=32, metavar='N', help='H and W of frames (default: 32)')
+parser.add_argument('--im-size', type=int, default=200, metavar='N', help='H and W of frames (default: 200)')
 parser.add_argument('--n-balls', type=int, default=3, metavar='N', help='Number of bouncing balls (default: 3)')
-parser.add_argument('--n-frames', type=int, default=25, metavar='N', help='Number of frames per sample (default: 128)')
+parser.add_argument('--n-frames', type=int, default=50, metavar='N', help='Number of frames per sample (default: 50)')
 parser.add_argument('--n-examples', type=int, default=50000, metavar='N', help='Number of training examples (default: 50000)')
 args = parser.parse_args()
 args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
@@ -49,9 +49,8 @@ if args.cuda:
 if args.data_path:
 	trainset = Loader_gen_offline(args.data_path)
 else:
-	trainset = Loader_gen(im_size=args.im_size, n_balls=args.n_balls, n_frames=args.n_frames, sample_size=args.train_examples)
+	trainset = Loader_gen(im_size=args.im_size, n_balls=args.n_balls, n_frames=args.n_frames, sample_size=args.n_examples)
 
-trainset = Loader(args.data_path)
 train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, num_workers=args.workers)
 
 generator = Generator().train()
