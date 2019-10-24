@@ -157,8 +157,7 @@ if __name__ == "__main__":
 			hdf['data'][-1:]=dat
 
 		except KeyError:
-			pass
-			#hdf.create_dataset('data', data=dat, maxshape=(None, args.im_size, args.im_size, args.n_frames*args.rep_times))
+			hdf.create_dataset('data', data=dat, maxshape=(None, args.im_size, args.im_size, args.n_frames*args.rep_times))
 
 		print(i)
 

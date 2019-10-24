@@ -10,10 +10,9 @@ import torch.utils.data
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 
-from model import *
-
-from train_loop import TrainLoop
-from data_load import Loader
+from cup_generator.model import *
+from cup_generator.train_loop import TrainLoop
+from data_load import Loader_gen, Loader_gen_offline
 
 parser = argparse.ArgumentParser(description='Hyper volume training of GANs')
 parser.add_argument('--batch-size', type=int, default=64, metavar='N', help='input batch size for training (default: 64)')
@@ -35,12 +34,22 @@ parser.add_argument('--alpha', type=float, default=0.8, metavar='alhpa', help='U
 parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
 parser.add_argument('--sgd', action='store_true', default=False, help='enables SGD - *MGD only* ')
 parser.add_argument('--job-id', type=str, default=None, help='Arbitrary id to be written on checkpoints')
+### Data options
+parser.add_argument('--im-size', type=int, default=32, metavar='N', help='H and W of frames (default: 32)')
+parser.add_argument('--n-balls', type=int, default=3, metavar='N', help='Number of bouncing balls (default: 3)')
+parser.add_argument('--n-frames', type=int, default=25, metavar='N', help='Number of frames per sample (default: 128)')
+parser.add_argument('--n-examples', type=int, default=50000, metavar='N', help='Number of training examples (default: 50000)')
 args = parser.parse_args()
 args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
 torch.manual_seed(args.seed)
 if args.cuda:
 	torch.cuda.manual_seed(args.seed)
+
+if args.data_path:
+	trainset = Loader_gen_offline(args.data_path)
+else:
+	trainset = Loader_gen(im_size=args.im_size, n_balls=args.n_balls, n_frames=args.n_frames, sample_size=args.train_examples)
 
 trainset = Loader(args.data_path)
 train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, num_workers=args.workers)

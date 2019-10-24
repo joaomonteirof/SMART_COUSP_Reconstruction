@@ -55,7 +55,7 @@ def get_streaking_image(x, mask):
 
 	y1=np.multiply(x,Cu)
 
-	y = y1.sum(2).T
+	y = y1.sum(2)
 
 	return y
 		

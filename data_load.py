@@ -2,11 +2,44 @@ import h5py
 import torch
 import numpy as np
 from torch.utils.data import Dataset
+from data_prep.offline_input_data_gen import *
+from data_prep.offline_output_data_gen import *
+import scipy.io as sio
 
 class Loader(Dataset):
 
-	def __init__(self, input_file_name, output_file_name):
+	def __init__(self, im_size, n_balls, n_frames, rep_times, sample_size, mask_path=None):
 		super(Loader, self).__init__()
+		self.im_size = im_size
+		self.n_balls = n_balls
+		self.n_frames = n_frames
+		self.rep_times = rep_times
+		self.sample_size = sample_size
+
+		if mask_path:
+			self.mask = sio.loadmat(mask_path)['mask2']
+		else:
+			self.mask = np.ones([im_size, im_size])
+
+	def __getitem__(self, index):
+
+		out = bounce_mat(res=self.im_size, n=self.n_balls, T=self.n_frames)
+		out = np.moveaxis(out, 0, -1)
+		out = np.repeat(out, self.rep_times, axis=-1)
+		inp = get_streaking_image(out, self.mask)
+
+		out = torch.from_numpy(out).unsqueeze(0).float().contiguous()
+		inp = torch.from_numpy(inp).unsqueeze(0).float().contiguous()
+
+		return inp, out
+
+	def __len__(self):
+		return self.sample_size
+
+class Loader_offline(Dataset):
+
+	def __init__(self, input_file_name, output_file_name):
+		super(Loader_offline, self).__init__()
 		self.input_file_name = input_file_name
 		self.output_file_name = output_file_name
 		self.in_file = None
@@ -35,36 +68,64 @@ class Loader(Dataset):
 	def __len__(self):
 		return self.len
 
-class Loader_manyfiles(Dataset):
+class Loader_gen(Dataset):
 
-	def __init__(self, input_file_base_name, output_file_base_name, n_files):
-		super(Loader_manyfiles, self).__init__()
-		self.in_file_base_name = input_file_base_name
-		self.out_file_base_name = output_file_base_name
-
-		open_file = h5py.File(output_file_base_name+'_1.hdf', 'r')
-
-		self.len_per_file = open_file['data'].shape[0]
-		self.total_len = n_files*self.len_per_file
-
-		open_file.close()
+	def __init__(self, im_size, n_balls, n_frames, sample_size):
+		super(Loader_gen, self).__init__()
+		self.im_size = im_size
+		self.n_balls = n_balls
+		self.n_frames = n_frames
+		self.sample_size = sample_size
 
 	def __getitem__(self, index):
 
-		file_ = index // self.len_per_file + 1
-		index = index % self.len_per_file
+		out = bounce_mat(res=self.im_size, n=self.n_balls, T=self.n_frames)
+		out = np.moveaxis(out, 0, -1)
 
-		in_file = h5py.File(self.in_file_base_name+'_'+str(file_)+'.hdf', 'r')
-		in_samples = self.in_file['data'][index]
-		in_samples = torch.from_numpy(in_samples).float().unsqueeze(0)
-		in_file.close()
+		out = torch.from_numpy(out[:,:,np.random.randint(self.n_frames)]).squeeze().unsqueeze(0).float().contiguous()
 
-		out_file = h5py.File(self.out_file_base_name+'_'+str(file_)+'.hdf', 'r')
-		out_samples = np.moveaxis(self.out_file['data'][index], -1, 0)
-		out_samples = (torch.from_numpy(out_samples).float() - 0.5) / 0.5
-		out_file.close()
-
-		return in_samples, out_samples
+		return out
 
 	def __len__(self):
-		return self.total_len
+		return self.sample_size
+
+class Loader_gen_offline(Dataset):
+
+	def __init__(self, hdf5_name):
+		super(Loader_gen_offline, self).__init__()
+		self.hdf5_name = hdf5_name
+
+		open_file = h5py.File(self.hdf5_name, 'r')
+		self.length = len(open_file['data'])
+		open_file.close()
+
+		self.open_file = None
+
+	def __getitem__(self, index):
+
+		if not self.open_file: self.open_file = h5py.File(self.hdf5_name, 'r')
+
+		scene = torch.from_numpy(np.moveaxis(self.open_file['data'][index], -1, 0)).float()
+		idx = np.random.randint(scene.size(0))
+		img = scene[idx]
+
+		return img.unsqueeze(0)
+
+	def __len__(self):
+		return self.length
+
+if __name__=='__main__':
+
+	test_dataset = Loader(200, 3, 50, 2, 100, './mask.mat')
+
+	print(test_dataset.mask)
+
+	inp_, out_ = test_dataset.__getitem__(10)
+
+	print(inp_.shape, out_.shape)
+
+	test_dataset = Loader_gen(200, 3, 50, 100)
+
+	out_ = test_dataset.__getitem__(10)
+
+	print(out_.shape)

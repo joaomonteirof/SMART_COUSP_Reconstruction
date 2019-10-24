@@ -8,7 +8,7 @@ class model_gen(nn.Module):
 
 		self.cuda_mode = cuda_mode
 
-		## Considering (200, 229) inputs
+		## Assuming (200, 299) inputs
 
 		self.features = nn.Sequential(
 			nn.Conv2d(1, 1024, kernel_size=(5,5), padding=(2,1), stride=(2,2), bias=False),
@@ -23,7 +23,7 @@ class model_gen(nn.Module):
 			nn.Conv2d(256, 128, kernel_size=(5,5), padding=(2,1), stride=(2,2), bias=False),
 			nn.BatchNorm2d(128),
 			nn.ReLU(),
-			nn.Conv2d(128, 50, kernel_size=(5,5), padding=(2,2), stride=(2,2), bias=False),
+			nn.Conv2d(128, 50, kernel_size=(5,5), padding=(2,0), stride=(2,2), bias=False),
 			nn.BatchNorm2d(50),
 			nn.ReLU() )
 
