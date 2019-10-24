@@ -9,7 +9,7 @@ import torch
 import torch.utils.data
 from torch.autograd import Variable
 from torchvision.transforms import transforms
-from model import *
+from cup_generator.model import *
 from PIL import ImageEnhance
 
 def denorm(unorm):

@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from scipy.optimize import minimize
 from tqdm import tqdm
 
-from MGD_utils import *
+from cup_generator.MGD_utils import *
 
 
 class TrainLoop(object):

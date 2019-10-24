@@ -6,7 +6,7 @@ import sys
 import torch
 import torch.optim as optim
 
-from model import *
+from cup_generator.model import *
 
 parser = argparse.ArgumentParser(description='Hyper volume training of GANs')
 parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
