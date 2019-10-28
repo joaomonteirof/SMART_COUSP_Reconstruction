@@ -72,7 +72,7 @@ class TrainLoop(object):
 				self.logger.add_scalar('Valid/MSE', self.history['valid_loss'][-1], self.total_iters)
 				grid = torchvision.utils.make_grid(input_streaking_images)
 				self.logger.add_image('Inputs', grid, self.total_iters)
-				add_video('Reconstructed', torch.cat(frames_list, 1), self.total_iters)
+				self.logger.add_video('Reconstructed', torch.cat(frames_list, 1), self.total_iters)
 
 			print('Total train loss: {}'.format(self.history['train_loss'][-1]))
 			print('Total valid loss: {}'.format(self.history['valid_loss'][-1]))
