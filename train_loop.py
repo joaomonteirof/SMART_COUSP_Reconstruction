@@ -135,15 +135,17 @@ class TrainLoop(object):
 			x = x.cuda()
 			y = y.cuda()
 
-		out = self.model.forward(x)
+		with torch.no_grad():
 
-		loss = 0
-		frames_list = []
+			out = self.model.forward(x)
 
-		for i in range(out.size(1)):
-			gen_frame = self.generator(out[:,i,:])
-			loss += torch.nn.functional.mse_loss(gen_frame, y[:,:,:,:,i])
-			frames_list.append(gen_frame.unsqueeze(1))
+			loss = 0
+			frames_list = []
+
+			for i in range(out.size(1)):
+				gen_frame = self.generator(out[:,i,:])
+				loss += torch.nn.functional.mse_loss(gen_frame, y[:,:,:,:,i])
+				frames_list.append(gen_frame.unsqueeze(1))
 
 		return loss.item(), x, frames_list
 
