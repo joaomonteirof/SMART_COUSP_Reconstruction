@@ -49,7 +49,7 @@ if args.cuda:
 	torch.cuda.manual_seed(args.seed)
 
 if args.logdir:
-	writer = SummaryWriter(log_dir=args.logdir, comment=args.model, purge_step=True)
+	writer = SummaryWriter(log_dir=args.logdir, comment='frame generator', purge_step=True)
 else:
 	writer = None
 

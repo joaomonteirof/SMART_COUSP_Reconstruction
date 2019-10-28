@@ -39,7 +39,7 @@ args = parser.parse_args()
 args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
 if args.logdir:
-	writer = SummaryWriter(log_dir=args.logdir, comment=args.model, purge_step=True)
+	writer = SummaryWriter(log_dir=args.logdir, comment='reconstruction', purge_step=True)
 else:
 	writer = None
 
