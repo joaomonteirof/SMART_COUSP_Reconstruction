@@ -1,4 +1,5 @@
 import torch
+import torchvision
 import torch.nn.init as init
 
 import numpy as np
@@ -62,13 +63,16 @@ class TrainLoop(object):
 			# Validation
 
 			for t, batch in enumerate(self.valid_loader):
-				new_valid_loss = self.valid(batch)
+				new_valid_loss, input_streaking_images, frames_list = self.valid(batch)
 				valid_loss += new_valid_loss
 
 			self.history['valid_loss'].append(valid_loss/(t+1))
 
 			if self.logger:
 				self.logger.add_scalar('Valid/MSE', self.history['valid_loss'][-1], self.total_iters)
+				grid = torchvision.utils.make_grid(input_streaking_images)
+				self.logger.add_image('Inputs', grid, self.total_iters)
+				add_video('Reconstructed', torch.cat(frames_list, 1), self.total_iters)
 
 			print('Total train loss: {}'.format(self.history['train_loss'][-1]))
 			print('Total valid loss: {}'.format(self.history['valid_loss'][-1]))
@@ -141,12 +145,7 @@ class TrainLoop(object):
 			loss += torch.nn.functional.mse_loss(gen_frame, y[:,:,:,:,i])
 			frames_list.append(gen_frame.unsqueeze(1))
 
-		if self.logger:
-			grid = torchvision.utils.make_grid(x)
-			self.logger.add_image('Inputs', grid, self.total_iters)
-			add_video('Reconstructed', torch.cat(frames_list, 1), self.total_iters)
-
-		return loss.item()
+		return loss.item(), x, frames_list
 
 	def checkpointing(self):
 
