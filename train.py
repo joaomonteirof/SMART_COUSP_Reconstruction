@@ -48,7 +48,7 @@ if args.data_path:
 	valid_data_set = Loader_offline(input_file_name=args.data_path+'input_valid.hdf', output_file_name=args.data_path+'output_valid.hdf')
 else:
 	train_data_set = Loader(im_size=args.im_size, n_balls=args.n_balls, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.train_examples, mask_path=args.mask_path)
-	valid_data_set = Loader(im_size=args.im_size, n_balls=args.n_balls, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.valid_examples, mask_path=args.mask_path)
+	valid_data_set = Loader(im_size=args.im_size, n_balls=args.n_balls, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.val_examples, mask_path=args.mask_path)
 
 train_loader = DataLoader(train_data_set, batch_size=args.batch_size, shuffle=False, num_workers=args.n_workers)
 valid_loader = DataLoader(valid_data_set, batch_size=args.valid_batch_size, shuffle=False, num_workers=args.n_workers)
