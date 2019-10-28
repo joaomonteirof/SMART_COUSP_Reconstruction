@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 class TrainLoop(object):
 
-	def __init__(self, model, generator, optimizer, train_loader, valid_loader, checkpoint_path=None, checkpoint_epoch=None, cuda=True):
+	def __init__(self, model, generator, optimizer, train_loader, valid_loader, checkpoint_path=None, checkpoint_epoch=None, cuda=True, logger=None):
 		if checkpoint_path is None:
 			# Save to current directory
 			self.checkpoint_path = os.getcwd()
@@ -31,6 +31,7 @@ class TrainLoop(object):
 		self.cur_epoch = 0
 		self.its_without_improv = 0
 		self.last_best_val_loss = np.inf
+		self.logger = logger
 
 		if checkpoint_epoch is not None:
 			self.load_checkpoint(self.save_epoch_fmt.format(checkpoint_epoch))
@@ -55,11 +56,16 @@ class TrainLoop(object):
 				train_loss += new_train_loss[0]
 				mse += new_train_loss[1]
 				intra_mse += new_train_loss[2]
+				if self.logger:
+					self.logger.add_scalar('Train/Train Loss', new_train_loss[0], self.total_iters)
+					self.logger.add_scalar('Train/MSE', new_train_loss[1], self.total_iters)
+					self.logger.add_scalar('Train/Intra MSE', new_train_loss[2], self.total_iters)
+				self.total_iters += 1
 
 			self.history['train_loss'].append(train_loss/(t+1))
 			self.history['mse'].append(mse/(t+1))
 			self.history['intra_mse'].append(intra_mse/(t+1))
-			self.total_iters += 1
+
 
 			# Validation
 
@@ -68,6 +74,9 @@ class TrainLoop(object):
 				valid_loss += new_valid_loss
 
 			self.history['valid_loss'].append(valid_loss/(t+1))
+
+			if self.logger:
+				self.logger.add_scalar('Valid/MSE', self.history['valid_loss'][-1], self.total_iters)
 
 			print('Total train loss: {}'.format(self.history['train_loss'][-1]))
 			print('Train MSE {}'.format(self.history['mse'][-1]))
@@ -135,10 +144,17 @@ class TrainLoop(object):
 		out = self.model.forward(x)
 
 		loss = 0
+		frames_list = []
 
 		for i in range(out.size(1)):
 			gen_frame = self.generator(out[:,i,:].squeeze().contiguous()).squeeze()
 			loss += torch.nn.functional.mse_loss(gen_frame, y[:,i,:].squeeze())
+			frames_list.append(gen_frame.unsqueeze(1).unsqueeze(1))
+
+		if self.logger:
+			grid = torchvision.utils.make_grid(x)
+			self.logger.add_image('Inputs', grid, self.total_iters)
+			add_video('Reconstructed', torch.cat(frames_list, 1), self.total_iters)
 
 		return loss.item()/(i+1)
 

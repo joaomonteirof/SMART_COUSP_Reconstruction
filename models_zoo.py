@@ -23,8 +23,8 @@ class model_gen(nn.Module):
 			nn.Conv2d(256, 128, kernel_size=(5,5), padding=(2,1), stride=(2,2), bias=False),
 			nn.BatchNorm2d(128),
 			nn.ReLU(),
-			nn.Conv2d(128, 50, kernel_size=(5,5), padding=(2,0), stride=(2,2), bias=False),
-			nn.BatchNorm2d(50),
+			nn.Conv2d(128, 100, kernel_size=(5,5), padding=(2,0), stride=(2,2), bias=False),
+			nn.BatchNorm2d(100),
 			nn.ReLU() )
 
 		self.lstm = nn.LSTM(49, 256, 2, bidirectional=True, batch_first=False)

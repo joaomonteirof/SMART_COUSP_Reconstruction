@@ -4,6 +4,7 @@ import pickle
 import numpy as np
 import scipy.linalg as sla
 import torch
+import torchvision
 import torch.nn.functional as F
 from scipy.optimize import minimize
 from tqdm import tqdm
@@ -13,7 +14,7 @@ from cup_generator.MGD_utils import *
 
 class TrainLoop(object):
 
-	def __init__(self, generator, disc_list, optimizer, train_loader, alpha=0.8, nadir_slack=1.1, train_mode='vanilla', checkpoint_path=None, checkpoint_epoch=None, cuda=True, job_id=None):
+	def __init__(self, generator, disc_list, optimizer, train_loader, alpha=0.8, nadir_slack=1.1, train_mode='vanilla', checkpoint_path=None, checkpoint_epoch=None, cuda=True, job_id=None, logger=None):
 		if checkpoint_path is None:
 			# Save to current directory
 			self.checkpoint_path = os.getcwd()
@@ -44,6 +45,7 @@ class TrainLoop(object):
 		self.proba = np.random.rand(len(disc_list))
 		self.proba /= np.sum(self.proba)
 		self.Q = np.zeros(len(self.disc_list))
+		self.logger = logger
 
 		if checkpoint_epoch is not None:
 			self.load_checkpoint(checkpoint_epoch)
@@ -62,9 +64,12 @@ class TrainLoop(object):
 				new_gen_loss, new_disc_loss = self.train_step(batch)
 				gen_loss += new_gen_loss
 				disc_loss += new_disc_loss
-				self.total_iters += 1
 				self.history['gen_loss_minibatch'].append(new_gen_loss)
 				self.history['disc_loss_minibatch'].append(new_disc_loss)
+				if self.logger:
+					self.logger.add_scalar('Train/Gen_loss Loss', new_gen_loss, self.total_iters)
+					self.logger.add_scalar('Train/Disc_loss Loss', new_disc_loss, self.total_iters)
+				self.total_iters += 1
 
 			self.history['gen_loss'].append(gen_loss / (t + 1))
 			self.history['disc_loss'].append(disc_loss / (t + 1))
@@ -94,6 +99,10 @@ class TrainLoop(object):
 			y_fake_ = y_fake_.cuda()
 
 		out_d = self.model.forward(z_).detach()
+
+		if self.logger and self.total_iters%1000==0:
+			grid = torchvision.utils.make_grid(out_d)
+			self.logger.add_image('G_sample', grid, self.total_iters)
 
 		loss_d = 0
 
