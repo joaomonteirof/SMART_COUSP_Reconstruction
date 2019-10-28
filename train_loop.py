@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 class TrainLoop(object):
 
-	def __init__(self, model, generator, optimizer, train_loader, valid_loader, checkpoint_path=None, checkpoint_epoch=None, cuda=True, logger=None):
+	def __init__(self, model, generator, optimizer, train_loader, valid_loader, max_gnorm=10.0, checkpoint_path=None, checkpoint_epoch=None, cuda=True, logger=None):
 		if checkpoint_path is None:
 			# Save to current directory
 			self.checkpoint_path = os.getcwd()
@@ -26,6 +26,7 @@ class TrainLoop(object):
 		self.optimizer = optimizer
 		self.train_loader = train_loader
 		self.valid_loader = valid_loader
+		self.max_gnorm = max_gnorm
 		self.history = {'train_loss': [], 'valid_loss': []}
 		self.total_iters = 0
 		self.cur_epoch = 0
@@ -89,6 +90,7 @@ class TrainLoop(object):
 
 	def train_step(self, batch):
 
+		self.generator.eval()
 		self.model.train()
 		self.optimizer.zero_grad()
 
@@ -110,12 +112,17 @@ class TrainLoop(object):
 			loss += torch.nn.functional.mse_loss(frames_list[-1], y[:,:,:,:,i])
 
 		loss.backward()
+		grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_gnorm)
 		self.optimizer.step()
+
+		if self.logger:
+			self.logger.add_scalar('Info/Grad_norm', grad_norm, self.total_iters)
 
 		return loss.item()
 
 	def valid(self, batch):
 
+		self.generator.eval()
 		self.model.eval()
 
 		x, y = batch

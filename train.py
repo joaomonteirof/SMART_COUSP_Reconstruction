@@ -17,6 +17,7 @@ parser.add_argument('--epochs', type=int, default=200, metavar='N', help='number
 parser.add_argument('--lr', type=float, default=0.0003, metavar='LR', help='learning rate (default: 0.0002)')
 parser.add_argument('--beta1', type=float, default=0.5, metavar='beta1', help='Adam beta 1 (default: 0.5)')
 parser.add_argument('--beta2', type=float, default=0.999, metavar='beta2', help='Adam beta 2 (default: 0.99)')
+parser.add_argument('--max-gnorm', type=float, default=10., metavar='clip', help='Max gradient norm (default: 10.0)')
 parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
 parser.add_argument('--data-path', type=str, default=None, metavar='Path', help='Optional path to pre-saved data')
 parser.add_argument('--checkpoint-epoch', type=int, default=None, metavar='N', help='epoch to load for checkpointing. If None, training starts from scratch')
@@ -70,7 +71,7 @@ if args.cuda:
 
 optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
 
-trainer = TrainLoop(model, generator, optimizer, train_loader, valid_loader, checkpoint_path=args.checkpoint_path, checkpoint_epoch=args.checkpoint_epoch, cuda=args.cuda, logger=writer)
+trainer = TrainLoop(model, generator, optimizer, train_loader, valid_loader, max_gnorm=args.max_gnorm, checkpoint_path=args.checkpoint_path, checkpoint_epoch=args.checkpoint_epoch, cuda=args.cuda, logger=writer)
 
 print('Cuda Mode is: {}'.format(args.cuda))
 
