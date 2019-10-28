@@ -116,13 +116,13 @@ class TrainLoop(object):
 
 		for i in range(out.size(1)):
 
-			gen_frame = self.generator(out[:,i,:].squeeze().contiguous())
-			frames_list.append(gen_frame.squeeze())
-			loss_overall += torch.nn.functional.mse_loss(frames_list[-1], y[:,i,:].squeeze())
+			gen_frame = self.generator(out[:,i,:])
+			frames_list.append(gen_frame)
+			loss_overall += torch.nn.functional.mse_loss(frames_list[-1], y[:,:,:,:,i])
 
 		loss_diff = 0
 		for i in range(1, out.size(1)):
-			loss_diff += torch.nn.functional.mse_loss((frames_list[i]-frames_list[i-1]), (y[:,i,:].squeeze() - y[:,i-1,:].squeeze()))
+			loss_diff += torch.nn.functional.mse_loss((frames_list[i]-frames_list[i-1]), (y[:,:,:,:,i] - y[:,:,:,:,i-1]))
 
 		loss = loss_diff + loss_overall
 
@@ -147,9 +147,9 @@ class TrainLoop(object):
 		frames_list = []
 
 		for i in range(out.size(1)):
-			gen_frame = self.generator(out[:,i,:].squeeze().contiguous()).squeeze()
-			loss += torch.nn.functional.mse_loss(gen_frame, y[:,i,:].squeeze())
-			frames_list.append(gen_frame.unsqueeze(1).unsqueeze(1))
+			gen_frame = self.generator(out[:,i,:])
+			loss += torch.nn.functional.mse_loss(gen_frame, y[:,:,:,:,i])
+			frames_list.append(gen_frame.unsqueeze(1))
 
 		if self.logger:
 			grid = torchvision.utils.make_grid(x)
@@ -206,7 +206,7 @@ class TrainLoop(object):
 	def initialize_params(self):
 		for layer in self.model.modules():
 			if isinstance(layer, torch.nn.Conv2d):
-				init.kaiming_normal(layer.weight.data)
+				init.kaiming_normal_(layer.weight.data)
 			elif isinstance(layer, torch.nn.BatchNorm2d):
 				layer.weight.data.fill_(1)
 				layer.bias.data.zero_()
