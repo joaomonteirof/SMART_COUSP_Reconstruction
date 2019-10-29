@@ -103,6 +103,8 @@ class TrainLoop(object):
 		if self.logger and self.total_iters%1000==0:
 			grid = torchvision.utils.make_grid(out_d)
 			self.logger.add_image('G_sample', grid, self.total_iters)
+			grid = torchvision.utils.make_grid(x)
+			self.logger.add_image('Real_sample', grid, self.total_iters)
 
 		loss_d = 0
 
