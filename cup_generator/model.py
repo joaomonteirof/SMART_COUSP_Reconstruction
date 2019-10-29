@@ -61,7 +61,7 @@ class Generator(torch.nn.Module):
 		nn.init.normal_(out.weight, mean=0.0, std=0.02)
 		nn.init.constant_(out.bias, 0.0)
 		# Activation
-		self.output_layer.add_module('act', torch.nn.Tanh())
+		self.output_layer.add_module('act', torch.nn.Sigmoid())
 
 	def forward(self, x):
 		x = x.view(x.size(0), -1)
