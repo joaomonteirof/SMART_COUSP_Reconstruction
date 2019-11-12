@@ -26,7 +26,7 @@ class Generator(torch.nn.Module):
 		self.linear.add_module(act_name, torch.nn.ReLU())
 
 		# Hidden layers
-		num_filters = [1024, 1024, 512, 256, 128]
+		num_filters = [1024, 1024, 512, 256, 256]
 		self.hidden_layer = torch.nn.Sequential()
 		for i in range(len(num_filters)):
 			# Deconvolutional layer
@@ -55,7 +55,7 @@ class Generator(torch.nn.Module):
 		# Output layer
 		self.output_layer = torch.nn.Sequential()
 		# Deconvolutional layer
-		out = torch.nn.ConvTranspose2d(128, 1, kernel_size=4, stride=2, padding=1)
+		out = torch.nn.ConvTranspose2d(256, 1, kernel_size=4, stride=2, padding=1)
 		self.output_layer.add_module('out', out)
 		# Initializer
 		nn.init.normal_(out.weight, mean=0.0, std=0.02)
@@ -80,7 +80,7 @@ class Discriminator(torch.nn.Module):
 
 		# Hidden layers
 		self.hidden_layer = torch.nn.Sequential()
-		num_filters = [128, 256, 512, 1024]
+		num_filters = [256, 512, 512, 1024]
 		for i in range(len(num_filters)):
 			# Convolutional layer
 			if i == 0:
