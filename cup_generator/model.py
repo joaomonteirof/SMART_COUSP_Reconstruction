@@ -74,9 +74,11 @@ class Discriminator(torch.nn.Module):
 	def __init__(self, optimizer, lr, betas, batch_norm=False):
 		super(Discriminator, self).__init__()
 
-		self.projection = nn.Conv2d(1, 1, kernel_size=8, stride=2, padding=3, bias=False)
-		with torch.no_grad():
-			self.projection.weight.div_(torch.norm(self.projection.weight, keepdim=True))
+		#self.projection = nn.Conv2d(1, 1, kernel_size=8, stride=2, padding=3, bias=False)
+		#with torch.no_grad():
+			#self.projection.weight.div_(torch.norm(self.projection.weight, keepdim=True))
+		self.projection = nn.utils.weight_norm(nn.Conv2d(1, 1, kernel_size=8, stride=2, padding=3, bias=False))
+		self.projection.weight_g.data.fill_(1)
 
 		# Hidden layers
 		self.hidden_layer = torch.nn.Sequential()
