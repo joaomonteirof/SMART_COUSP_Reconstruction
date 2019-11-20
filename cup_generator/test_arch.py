@@ -17,7 +17,7 @@ args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 generator = Generator()
 disc = Discriminator(optim.Adam, 0.1, (0.1, 0.1))
 
-dummy_input = torch.rand(3,128)
+dummy_input = torch.rand(3,128,1,1)
 
 gen_sample = generator(dummy_input)
 

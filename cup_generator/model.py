@@ -45,7 +45,7 @@ class Generator(torch.nn.Module):
 
 		if x.dim()==2:
 			x = x.unsqueeze(-1).unsqueeze(-1)
-		elif not x.dim()==2:
+		elif not x.dim()==4:
 			print('WRONG INPUT DIMENSIO!!')
 			exit(1)
 
