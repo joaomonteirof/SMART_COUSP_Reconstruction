@@ -49,7 +49,7 @@ def get_streaking_image(x, mask):
 	x_1=np.zeros([D_x,D_y+D_t-1,D_t])
 
 	for i in range(D_t):
-		x_1[:,i:i+D_y,i]=x[:,:,i]
+		x_1[:,i:i+D_y,i]=x[:,:,D_t-i-1]
 
 	x=x_1
 
