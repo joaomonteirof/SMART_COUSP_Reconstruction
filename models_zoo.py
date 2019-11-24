@@ -3,12 +3,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class model_gen(nn.Module):
-	def __init__(self, cuda_mode):
+	def __init__(self, n_frames, cuda_mode):
 		super(model_gen, self).__init__()
 
 		self.cuda_mode = cuda_mode
 
-		## Assuming (200, 299) inputs
+		## Assuming (256, 355) inputs
 
 		self.features = nn.Sequential(
 			nn.Conv2d(1, 512, kernel_size=(5,5), padding=(2,1), stride=(2,2), bias=False),
@@ -23,8 +23,8 @@ class model_gen(nn.Module):
 			nn.Conv2d(256, 128, kernel_size=(5,5), padding=(2,1), stride=(2,2), bias=False),
 			nn.BatchNorm2d(128),
 			nn.ReLU(),
-			nn.Conv2d(128, 128, kernel_size=(5,5), padding=(2,1), stride=(2,2), bias=False),
-			nn.BatchNorm2d(128),
+			nn.Conv2d(128, n_frames, kernel_size=(5,5), padding=(2,1), stride=(2,2), bias=False),
+			nn.BatchNorm2d(n_frames),
 			nn.ReLU() )
 
 		self.lstm = nn.LSTM(80, 128, 2, bidirectional=True, batch_first=False)
@@ -34,7 +34,6 @@ class model_gen(nn.Module):
 	def forward(self, x):
 
 		x = self.features(x).squeeze(1).transpose(1,0)
-
 		x = x.view(x.size(0), x.size(1), -1)
 
 		batch_size = x.size(1)

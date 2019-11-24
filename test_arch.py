@@ -7,10 +7,11 @@ from cup_generator.model import Generator
 # Training settings
 parser = argparse.ArgumentParser(description='test models')
 parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
+parser.add_argument('--n-frames', type=int, default=25, metavar='N', help='Number of frames per sample (default: 128)')
 args = parser.parse_args()
 args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
-model = models_zoo.model_gen(args.cuda)
+model = models_zoo.model_gen(n_frames=args.n_frames, cuda_mode=args.cuda)
 generator = Generator().eval()
 frames_list=[]
 
