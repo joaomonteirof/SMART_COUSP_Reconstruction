@@ -37,7 +37,10 @@ def get_streaking_image(x, mask):
 	C=to_binary(C_transiton[:D_x, :D_y], 0.1)
 	'''
 
-	C = mask
+	if mask is None:
+		C = np.ones([D_x, D_y])
+	else:
+		C = mask
 
 	C_1=np.zeros([D_x,D_y+D_t-1,D_t])
 
@@ -66,10 +69,13 @@ if __name__ == "__main__":
 	parser.add_argument('--output-path', type=str, default='./', metavar='Path', help='Path for output')
 	parser.add_argument('--input-file-name', type=str, default='input.hdf', metavar='Path', help='input file name')
 	parser.add_argument('--output-file-name', type=str, default='output.hdf', metavar='Path', help='Output file name')
-	parser.add_argument('--mask-path', type=str, default='./mask.mat', metavar='Path', help='Output file name')
+	parser.add_argument('--mask-path', type=str, default=None, metavar='Path', help='Mask .mat file')
 	args = parser.parse_args()
 
-	r_mask = sio.loadmat(args.mask_path)['mask2']
+	if args.mask_path:
+		r_mask = sio.loadmat(args.mask_path)['d']
+	else:
+		r_mask = None
 
 	hdf_input = h5py.File(args.input_file_name, 'r')
 	hdf = h5py.File(args.output_path+args.output_file_name, 'w')

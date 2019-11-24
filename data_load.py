@@ -17,9 +17,9 @@ class Loader(Dataset):
 		self.sample_size = sample_size
 
 		if mask_path:
-			self.mask = sio.loadmat(mask_path)['mask2']
+			self.mask = sio.loadmat(mask_path)['d']
 		else:
-			self.mask = np.ones([im_size, im_size])
+			self.mask = None
 
 	def __getitem__(self, index):
 
