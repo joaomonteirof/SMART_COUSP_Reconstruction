@@ -17,7 +17,8 @@ class Loader(Dataset):
 		self.sample_size = sample_size
 
 		if mask_path:
-			self.mask = sio.loadmat(mask_path)['d']
+			self.mask = sio.loadmat(mask_path)
+			self.mask = self.mask[sorted(self.mask.keys())[-1]]
 		else:
 			self.mask = None
 

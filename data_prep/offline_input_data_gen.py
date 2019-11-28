@@ -73,7 +73,8 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	if args.mask_path:
-		r_mask = sio.loadmat(args.mask_path)['d']
+		r_mask = r_mask[sorted(r_keys.mask())[-1]]
+		r_mask = sio.loadmat(args.mask_path)
 	else:
 		r_mask = None
 

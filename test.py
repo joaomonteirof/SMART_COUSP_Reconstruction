@@ -18,7 +18,7 @@ def test_model(model, generator, data_loader, n_tests, cuda_mode, enhancement):
 	model.eval()
 	to_pil = transforms.ToPILImage()
 
-	with torch.no_grad()
+	with torch.no_grad():
 
 		for i in range(n_tests):
 			img_idx = np.random.randint(len(data_loader))
@@ -37,7 +37,7 @@ def test_model(model, generator, data_loader, n_tests, cuda_mode, enhancement):
 			for j in range(out.size(1)):
 
 				gen_frame = generator(out[:,j,:].contiguous())
-				frames_list.append(gen_frame.cpu().squeeze(0).detach()*0.5 + 0.5)
+				frames_list.append(gen_frame.cpu().squeeze(0).detach())
 
 			sample_rec = torch.cat(frames_list, 0)
 
@@ -70,11 +70,12 @@ def plot_learningcurves(history, keys):
 if __name__ == '__main__':
 
 	# Testing settings
-	parser = argparse.ArgumentParser(description='Testing online transfer learning for emotion recognition tasks')
+	parser = argparse.ArgumentParser(description='Generate reconstructed samples')
 	parser.add_argument('--cp-path', type=str, default=None, metavar='Path', help='Checkpoint/model path')
 	parser.add_argument('--generator-path', type=str, default=None, metavar='Path', help='Path for generator params')
 	parser.add_argument('--input-data-path', type=str, default='./data/input/', metavar='Path', help='Path to data input data')
 	parser.add_argument('--targets-data-path', type=str, default='./data/targets/', metavar='Path', help='Path to output data')
+	parser.add_argument('--n-frames', type=int, default=100, metavar='N', help='Number of frames per sample (default: 100)')
 	parser.add_argument('--n-tests', type=int, default=4, metavar='N', help='number of samples to  (default: 64)')
 	parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
 	parser.add_argument('--no-plots', action='store_true', default=False, help='Disables plot of train/test losses')
@@ -90,7 +91,7 @@ if __name__ == '__main__':
 	if args.cuda:
 		torch.cuda.manual_seed(args.seed)
 
-	model = models_zoo.model_gen(args.cuda)
+	model = models_zoo.model_gen(n_frames=args.n_frames, cuda_mode=args.cuda)
 	generator = Generator().eval()
 
 	ckpt = torch.load(args.cp_path, map_location = lambda storage, loc: storage)

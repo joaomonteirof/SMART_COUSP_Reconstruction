@@ -30,7 +30,7 @@ parser.add_argument('--logdir', type=str, default=None, metavar='Path', help='Pa
 ### Data options
 parser.add_argument('--im-size', type=int, default=32, metavar='N', help='H and W of frames (default: 32)')
 parser.add_argument('--n-balls', type=int, default=3, metavar='N', help='Number of bouncing balls (default: 3)')
-parser.add_argument('--n-frames', type=int, default=25, metavar='N', help='Number of frames per sample (default: 128)')
+parser.add_argument('--n-frames', type=int, default=25, metavar='N', help='Number of frames per sample (default: 25)')
 parser.add_argument('--rep-times', type=int, default=4, metavar='N', help='Number of times consecutive frames are repeated. No rep is equal to 1 (default: 4)')
 parser.add_argument('--train-examples', type=int, default=50000, metavar='N', help='Number of training examples (default: 50000)')
 parser.add_argument('--val-examples', type=int, default=5000, metavar='N', help='Number of validation examples (default: 500)')
