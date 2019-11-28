@@ -45,6 +45,7 @@ def get_streaking_image(x, mask):
 	C_1=np.zeros([D_x,D_y+D_t-1,D_t])
 
 	for i in range(D_t):
+		if i>=3:
 		C_1[:,i:i+D_y,i]=C
 	
 	Cu=C_1
@@ -59,6 +60,7 @@ def get_streaking_image(x, mask):
 	y1=np.multiply(x,Cu)
 
 	y = y1.sum(2)
+	y /= y.max()
 
 	return y
 		
