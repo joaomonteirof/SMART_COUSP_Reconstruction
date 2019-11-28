@@ -10,7 +10,7 @@ class add_noise(nn.Module):
 
 	def forward(self, x):
 
-		if self.training and self.noise_level(0.0):
+		if self.training and self.noise_level>0.0:
 			with torch.no_grad():
 				noise = torch.randn_like(x)*self.noise_level
 				x += noise
