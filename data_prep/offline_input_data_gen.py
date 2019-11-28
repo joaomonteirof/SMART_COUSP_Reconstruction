@@ -46,7 +46,7 @@ def get_streaking_image(x, mask):
 
 	for i in range(D_t):
 		if i>=3:
-		C_1[:,i:i+D_y,i]=C
+			C_1[:,i:i+D_y,i]=C
 	
 	Cu=C_1
 

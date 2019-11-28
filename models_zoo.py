@@ -2,13 +2,30 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+class add_noise(nn.Module):
+	def __init__(self, noise_level):
+		super(add_noise, self).__init__()
+
+		self.noise_level = noise_level
+
+	def forward(self, x):
+
+		if self.training and self.noise_level(0.0):
+			with torch.no_grad():
+				noise = torch.randn_like(x)*self.noise_level
+				x += noise
+				x = torch.clamp(x, 0.0, 1.0)
+		return x
+
 class model_gen(nn.Module):
-	def __init__(self, n_frames, cuda_mode):
+	def __init__(self, n_frames, cuda_mode, noise_level=0.0):
 		super(model_gen, self).__init__()
 
 		self.cuda_mode = cuda_mode
 
 		## Assuming (256, 355) inputs
+
+		self.noise_layer = add_noise(noise_level)
 
 		self.features = nn.Sequential(
 			nn.Conv2d(1, 512, kernel_size=(5,5), padding=(2,1), stride=(2,2), bias=False),
@@ -32,6 +49,8 @@ class model_gen(nn.Module):
 		self.fc = nn.Linear(128*2, 128)
 
 	def forward(self, x):
+
+		x = self.noise_layer(x)
 
 		x = self.features(x).squeeze(1).transpose(1,0)
 		x = x.view(x.size(0), x.size(1), -1)
