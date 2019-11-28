@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 
 class add_noise(nn.Module):
 	def __init__(self, noise_level):
@@ -10,7 +11,7 @@ class add_noise(nn.Module):
 
 	def forward(self, x):
 
-		if self.training and self.noise_level>0.0:
+		if self.training and self.noise_level>0.0 and np.random.rand()>0.5:
 			with torch.no_grad():
 				noise = torch.randn_like(x)*self.noise_level
 				x += noise
