@@ -15,7 +15,7 @@ parser.add_argument('--batch-size', type=int, default=64, metavar='N', help='inp
 parser.add_argument('--valid-batch-size', type=int, default=128, metavar='N', help='input batch size for testing (default: 128)')
 parser.add_argument('--epochs', type=int, default=200, metavar='N', help='number of epochs to train (default: 200)')
 parser.add_argument('--lr', type=float, default=0.0003, metavar='LR', help='learning rate (default: 0.0002)')
-parser.add_argument('--noise-level', type=float, default=0.0, metavar='LR', help='Variance of Gaussian noise added to inputs (default: 0.0)')
+parser.add_argument('--add-noise', action='store_true', default=False, help='Acivates Gaussian noise added to inputs (default: False)')
 parser.add_argument('--beta1', type=float, default=0.5, metavar='beta1', help='Adam beta 1 (default: 0.5)')
 parser.add_argument('--beta2', type=float, default=0.999, metavar='beta2', help='Adam beta 2 (default: 0.99)')
 parser.add_argument('--max-gnorm', type=float, default=10., metavar='clip', help='Max gradient norm (default: 10.0)')
@@ -59,7 +59,7 @@ torch.manual_seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
-model = models_zoo.model_gen(n_frames=args.n_frames, cuda_mode=args.cuda, noise_level=args.noise_level)
+model = models_zoo.model_gen(n_frames=args.n_frames, cuda_mode=args.cuda, input_noise=args.noise_level)
 generator = Generator().eval()
 
 gen_state = torch.load(args.generator_path, map_location=lambda storage, loc: storage)
@@ -70,10 +70,15 @@ if args.cuda:
 	generator = generator.cuda()
 	torch.backends.cudnn.benchmark=True
 
+print(model)
+print('\n')
+print(generator)
+print('\n')
+
 optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
 
 trainer = TrainLoop(model, generator, optimizer, train_loader, valid_loader, max_gnorm=args.max_gnorm, checkpoint_path=args.checkpoint_path, checkpoint_epoch=args.checkpoint_epoch, cuda=args.cuda, logger=writer)
 
-print('Cuda Mode is: {}'.format(args.cuda))
+print(args)
 
 trainer.train(n_epochs=args.epochs, save_every = args.save_every)

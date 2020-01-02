@@ -4,16 +4,14 @@ import torch.nn.functional as F
 import numpy as np
 
 class add_noise(nn.Module):
-	def __init__(self, noise_level):
+	def __init__(self, input_noise):
 		super(add_noise, self).__init__()
-
-		self.noise_level = noise_level
-
+		self.input_noise = input_noise
 	def forward(self, x):
 
-		if self.training and self.noise_level>0.0:
+		if self.training and self.input_noise:
 			with torch.no_grad():
-				noise = torch.randn_like(x)*self.noise_level
+				noise = torch.randn_like(x)*np.random.choice([1e-3, 1e-4, 1e-5])
 				if noise.size(0)>1:
 					noise[np.random.choice(np.arange(noise.size(0)), size=noise.size(0)//2, replace=False)] = 0.0
 				x += noise
@@ -21,14 +19,14 @@ class add_noise(nn.Module):
 		return x
 
 class model_gen(nn.Module):
-	def __init__(self, n_frames, cuda_mode, noise_level=0.0):
+	def __init__(self, n_frames, cuda_mode, input_noise=False):
 		super(model_gen, self).__init__()
 
 		self.cuda_mode = cuda_mode
 
 		## Assuming (256, 355) inputs
 
-		self.noise_layer = add_noise(noise_level)
+		self.noise_layer = add_noise(input_noise)
 
 		self.features = nn.Sequential(
 			nn.Conv2d(1, 512, kernel_size=(5,5), padding=(2,1), stride=(2,2), bias=False),
