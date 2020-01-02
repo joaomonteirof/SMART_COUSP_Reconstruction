@@ -70,6 +70,7 @@ class TrainLoop(object):
 
 			if self.logger:
 				self.logger.add_scalar('Valid/MSE', self.history['valid_loss'][-1], self.total_iters)
+				self.logger.add_scalar('Valid/Best_MSE', np.min(self.history['valid_loss']), self.total_iters)
 				grid = torchvision.utils.make_grid(input_streaking_images)
 				self.logger.add_image('Inputs', grid, self.total_iters)
 				self.logger.add_video('Reconstructed', torch.cat(frames_list, 1), self.total_iters)
