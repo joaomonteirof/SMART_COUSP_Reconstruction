@@ -70,13 +70,26 @@ if __name__ == '__main__':
 	if args.data_path:
 		data = glob.glob(args.data_path + '*.mat')
 
-		im_list = []
+		if len(data)>0:
 
-		for im in data:
-			im = sio.loadmat(im)
-			im_list.append(torch.from_numpy(im[sorted(im.keys())[-1]]).unsqueeze(0).unsqueeze(0))
+			im_list = []
 
-		im_data = torch.cat(im_list, 0).float()
+			for im in data:
+				im = sio.loadmat(im)
+				im_list.append(torch.from_numpy(im[sorted(im.keys())[-1]]).unsqueeze(0).unsqueeze(0))
+
+			im_data = torch.cat(im_list, 0).float()
+
+		else:
+			data = glob.glob(args.data_path + '*.png')
+			im_list = []
+
+			for im in data:
+				im = Image.open(im)
+				im_list.append(transforms.ToTensor()(im).unsqueeze(0))
+
+			im_data = torch.cat(im_list, 0).float()
+
 	else:
 
 		data = sio.loadmat(args.video_path)['Data']
