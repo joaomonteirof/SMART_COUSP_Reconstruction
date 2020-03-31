@@ -5,10 +5,21 @@ import pickle
 import h5py
 import numpy as np
 import scipy.io as sio
-
+from skimage.transform import ProjectiveTransform, warp
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import random
+
+MATRIX_TRANSFORM = np.array([[1.0079, 0.0085, 0.0001],
+						[0.0226, 1.0155, 0.0001],
+						[0.9163, 0.6183, 1.0000]])
+
+TRANSFORM = ProjectiveTransform(MATRIX_TRANSFORM)
+
+def normalize(data):
+	data_max, data_min = np.max(data), np.min(data)
+	return (data-data_min) / (data_max - data_min + 1e-8)
 
 def to_binary(img, level):
 
@@ -20,49 +31,34 @@ def to_binary(img, level):
 
 	return bin_img
 
-def get_streaking_image(x, mask):
+def get_streaking_image(x, mask=None):
 
 	D_x, D_y, D_t = x.shape
-	'''
-	p=4
-
-	C = mask
-
-	C_transiton=np.zeros([p*C.shape[0], p*C.shape[1]])
-
-	for i in range(C.shape[0]):
-		for j in range(C.shape[1]):
-			C_transiton[p*i:p*(i+1),p*j:p*(j+1)]=C[i,j]
-
-	C=to_binary(C_transiton[:D_x, :D_y], 0.1)
-	'''
 
 	if mask is None:
-		C = np.ones([D_x, D_y])
-	else:
-		C = mask
+		mask = np.ones([D_x, D_y])
 
-	C_1=np.zeros([D_x,D_y+D_t-1,D_t])
+	x[:, :, :3] = 0.0 ## ignores first 3 frames
+
+	Cu=np.zeros([D_x,D_y+D_t-1,D_t])
 
 	for i in range(D_t):
 		if i>=3:
-			C_1[:,i:i+D_y,i]=C
-	
-	Cu=C_1
+			Cu[:,i:i+D_y,i]=mask
 
-	x_1=np.zeros([D_x,D_y+D_t-1,D_t])
+	x_out = np.zeros(Cu.shape)
 
 	for i in range(D_t):
-		x_1[:,i:i+D_y,i]=x[:,:,D_t-i-1]
+		idx = D_t-i-1
+		im=x[:,:,idx:idx+1] * (1.0-0.1*random.random()) ## randomly changes the intensity of each frame to simulate the fluctuation of laser intensity
+		bar_T = warp(im, TRANSFORM).squeeze(-1)
+		x_out[:,i:i+D_y,i] = bar_T
 
-	x=x_1
+	y1=np.multiply(x_out, Cu)
+	y1 = y1.sum(2)
+	y1 = normalize(y1)
 
-	y1=np.multiply(x,Cu)
-
-	y = y1.sum(2)
-	y /= y.max()
-
-	return y
+	return y1
 		
 if __name__ == "__main__":
 
