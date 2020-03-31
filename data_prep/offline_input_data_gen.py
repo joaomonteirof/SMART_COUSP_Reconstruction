@@ -33,6 +33,8 @@ def to_binary(img, level):
 
 def get_streaking_image(x, mask=None):
 
+	x += np.random.rand(x.shape)*1e-5 ## avoid sparseness
+
 	D_x, D_y, D_t = x.shape
 
 	if mask is None:
