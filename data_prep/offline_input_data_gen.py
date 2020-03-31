@@ -1,5 +1,3 @@
-from numpy import *				
-from scipy import *			   
 import argparse
 import pickle
 import h5py
@@ -13,7 +11,7 @@ import random
 
 MATRIX_TRANSFORM = np.array([[1.0079, 0.0085, 0.0001],
 						[0.0226, 1.0155, 0.0001],
-						[0.9163, 0.6183, 1.0000]])
+						[0.9163, 0.6183, 1.0000]]).T
 
 TRANSFORM = ProjectiveTransform(MATRIX_TRANSFORM)
 
@@ -31,9 +29,7 @@ def to_binary(img, level):
 
 	return bin_img
 
-def get_streaking_image(x, mask=None):
-
-	x += np.random.rand(*x.shape)*1e-5 ## avoid sparseness
+def get_streaking_image(x, mask=None, intensity_variation=True):
 
 	D_x, D_y, D_t = x.shape
 
@@ -52,9 +48,12 @@ def get_streaking_image(x, mask=None):
 
 	for i in range(D_t):
 		idx = D_t-i-1
-		im=x[:,:,idx:idx+1] * (1.0-0.1*random.random()) ## randomly changes the intensity of each frame to simulate the fluctuation of laser intensity
-		bar_T = warp(im, TRANSFORM).squeeze(-1)
-		x_out[:,i:i+D_y,i] = bar_T
+		im=x[:,:,idx].T
+		if idx>=3:
+			if intensity_variation:
+				im *= (1.0-0.1*random.random()) ## randomly changes the intensity of each frame to simulate the fluctuation of laser intensity
+			im = warp(im, TRANSFORM, output_shape=[D_x, D_y], order=1, mode='constant').T
+		x_out[:,i:i+D_y,i] = im
 
 	y1=np.multiply(x_out, Cu)
 	y1 = y1.sum(2)
