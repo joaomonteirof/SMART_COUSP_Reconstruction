@@ -14,7 +14,8 @@ if __name__ == "__main__":
 	input_scene = sio.loadmat('test_scene.mat')
 	input_scene = input_scene[sorted(input_scene.keys())[-1]]
 
-	test_streaking_image = transforms.ToTensor()(Image.open('test_simulation.png')).numpy().squeeze(0)
+	test_streaking_image = sio.loadmat('test_simulation.mat')
+	test_streaking_image = test_streaking_image[sorted(test_streaking_image.keys())[-1]]
 
 	mask = sio.loadmat(args.mask_path)
 	mask = mask[sorted(mask.keys())[-1]]
