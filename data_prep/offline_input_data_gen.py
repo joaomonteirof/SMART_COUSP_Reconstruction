@@ -3,17 +3,16 @@ import pickle
 import h5py
 import numpy as np
 import scipy.io as sio
-from skimage.transform import ProjectiveTransform, warp
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import random
+import cv2
 
 MATRIX_TRANSFORM = np.array([[1.0079, 0.0085, 0.0001],
 						[0.0226, 1.0155, 0.0001],
 						[0.9163, 0.6183, 1.0000]]).T
 
-TRANSFORM = ProjectiveTransform(MATRIX_TRANSFORM)
 
 def normalize(data):
 	data_max, data_min = np.max(data), np.min(data)
@@ -52,7 +51,7 @@ def get_streaking_image(x, mask=None, intensity_variation=True):
 		if idx>=3:
 			if intensity_variation:
 				im *= (1.0-0.1*random.random()) ## randomly changes the intensity of each frame to simulate the fluctuation of laser intensity
-			im = warp(im, TRANSFORM, output_shape=[D_x, D_y], order=1, mode='constant').T
+			im = cv2.warpPerspective(src=im, M=MATRIX_TRANSFORM, dsize=(D_x, D_y)).T
 		x_out[:,i:i+D_y,i] = im
 
 	y1=np.multiply(x_out, Cu)
