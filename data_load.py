@@ -1,20 +1,25 @@
 import h5py
 import torch
+import random
 import numpy as np
 from torch.utils.data import Dataset
 from data_prep.offline_input_data_gen import *
 from data_prep.offline_output_data_gen import *
 import scipy.io as sio
+from PIL import Image
+import torchvision.transforms as transforms
+import glob
 
 class Loader(Dataset):
 
-	def __init__(self, im_size, n_balls, n_frames, rep_times, sample_size, mask_path=None):
+	def __init__(self, im_size, n_balls, n_frames, rep_times, sample_size, mask_path=None, aux_data=None):
 		super(Loader, self).__init__()
 		self.im_size = im_size
 		self.n_balls = n_balls
 		self.n_frames = n_frames
 		self.rep_times = rep_times
 		self.sample_size = sample_size
+		self.aux_data = True if aux_data is not None else False
 
 		if mask_path:
 			self.mask = sio.loadmat(mask_path)
@@ -22,7 +27,36 @@ class Loader(Dataset):
 		else:
 			self.mask = None
 
+		if self.aux_data:
+			input_path_list, output_path_list = sorted(glob.glob(aux_data+'*.png')), glob.glob(aux_data+'*.mat')
+			self.input_list = []
+
+			for im in input_path_list:
+				im = Image.open(im)
+				self.input_list.append(transforms.ToTensor()(im).unsqueeze(0))
+
+			self.output_data = sio.loadmat(output_path_list[0])
+			self.output_data = torch.from_numpy(self.output_data[sorted(self.output_data.keys())[0]]).transpose(0,3,1,2)
+
 	def __getitem__(self, index):
+
+		if self.aux_data:
+			if random.random() > 0.5
+				idx = random.choice(np.arange(len()))
+				inp, out = self.input_list[idx], self.output_data[idx]
+
+			else:
+				inp, out = self.gen_example()
+
+		else:
+			inp, out = self.gen_example()
+
+		return inp, out
+
+	def __len__(self):
+		return self.sample_size
+
+	def gen_example(self):
 
 		out = bounce_mat(res=self.im_size, n=self.n_balls, T=self.n_frames)
 		out = np.moveaxis(out, 0, -1)
@@ -33,9 +67,6 @@ class Loader(Dataset):
 		inp = torch.from_numpy(inp).unsqueeze(0).float().contiguous()
 
 		return inp, out
-
-	def __len__(self):
-		return self.sample_size
 
 class Loader_offline(Dataset):
 

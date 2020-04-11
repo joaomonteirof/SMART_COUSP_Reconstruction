@@ -36,6 +36,8 @@ parser.add_argument('--rep-times', type=int, default=4, metavar='N', help='Numbe
 parser.add_argument('--train-examples', type=int, default=50000, metavar='N', help='Number of training examples (default: 50000)')
 parser.add_argument('--val-examples', type=int, default=5000, metavar='N', help='Number of validation examples (default: 500)')
 parser.add_argument('--mask-path', type=str, default=None, metavar='Path', help='path to encoding mask')
+parser.add_argument('--aux-train-data', type=str, default=None, metavar='Path', help='path to auxiliary training data')
+parser.add_argument('--aux-val-data', type=str, default=None, metavar='Path', help='path to auxiliary testing data')
 
 args = parser.parse_args()
 args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
@@ -49,8 +51,8 @@ if args.data_path:
 	train_data_set = Loader_offline(input_file_name=args.data_path+'input_valid.hdf', output_file_name=args.data_path+'output_valid.hdf')
 	valid_data_set = Loader_offline(input_file_name=args.data_path+'input_valid.hdf', output_file_name=args.data_path+'output_valid.hdf')
 else:
-	train_data_set = Loader(im_size=args.im_size, n_balls=args.n_balls, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.train_examples, mask_path=args.mask_path)
-	valid_data_set = Loader(im_size=args.im_size, n_balls=args.n_balls, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.val_examples, mask_path=args.mask_path)
+	train_data_set = Loader(im_size=args.im_size, n_balls=args.n_balls, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.train_examples, mask_path=args.mask_path, aux_data=args.aux_train_data)
+	valid_data_set = Loader(im_size=args.im_size, n_balls=args.n_balls, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.val_examples, mask_path=args.mask_path, aux_data=args.aux_val_data)
 
 train_loader = DataLoader(train_data_set, batch_size=args.batch_size, shuffle=False, num_workers=args.n_workers)
 valid_loader = DataLoader(valid_data_set, batch_size=args.valid_batch_size, shuffle=False, num_workers=args.n_workers)
