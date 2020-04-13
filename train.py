@@ -24,6 +24,7 @@ parser.add_argument('--data-path', type=str, default=None, metavar='Path', help=
 parser.add_argument('--checkpoint-epoch', type=int, default=None, metavar='N', help='epoch to load for checkpointing. If None, training starts from scratch')
 parser.add_argument('--checkpoint-path', type=str, default=None, metavar='Path', help='Path for checkpointing')
 parser.add_argument('--generator-path', type=str, default=None, metavar='Path', help='Path for generator params')
+parser.add_argument('--pretrained-path', type=str, default=None, metavar='Path', help='Path to trained model. Discards output layer')
 parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
 parser.add_argument('--save-every', type=int, default=5, metavar='N', help='how many batches to wait before logging training status. (default: 5)')
 parser.add_argument('--n-workers', type=int, default=2)
@@ -66,6 +67,12 @@ generator = Generator().eval()
 
 gen_state = torch.load(args.generator_path, map_location=lambda storage, loc: storage)
 generator.load_state_dict(gen_state['model_state'])
+
+if args.pretrained_path:
+	print('\nLoading pretrained model from: {}\n'.format(args.pretrained_path))
+	ckpt=torch.load(args.pretrained_path, map_location = lambda storage, loc: storage)
+	print(model.load_state_dict(ckpt['model_state'], strict=False))
+	print('\n')
 
 if args.cuda:
 	model = model.cuda()
