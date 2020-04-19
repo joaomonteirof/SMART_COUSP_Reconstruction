@@ -41,7 +41,7 @@ class Loader(Dataset):
 	def __getitem__(self, index):
 
 		if self.aux_data:
-			if random.random() > 0.5
+			if random.random() > 0.5:
 				idx = random.choice(np.arange(len()))
 				inp, out = self.input_list[idx], self.output_data[idx]
 
