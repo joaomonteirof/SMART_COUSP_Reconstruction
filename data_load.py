@@ -33,10 +33,10 @@ class Loader(Dataset):
 
 			for im in input_path_list:
 				im = Image.open(im)
-				self.input_list.append(transforms.ToTensor()(im))
+				self.input_list.append(transforms.ToTensor()(im).float())
 
 			self.output_data = sio.loadmat(output_path_list[0])
-			self.output_data = torch.from_numpy(self.output_data[sorted(self.output_data.keys())[0]]).permute(0,3,1,2).unsqueeze(1)
+			self.output_data = torch.from_numpy(self.output_data[sorted(self.output_data.keys())[0]]).permute(0,3,1,2).unsqueeze(1).float()
 
 	def __getitem__(self, index):
 
