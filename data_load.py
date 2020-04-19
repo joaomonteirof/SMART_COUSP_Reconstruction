@@ -36,7 +36,7 @@ class Loader(Dataset):
 				self.input_list.append(transforms.ToTensor()(im).unsqueeze(0))
 
 			self.output_data = sio.loadmat(output_path_list[0])
-			self.output_data = torch.from_numpy(self.output_data[sorted(self.output_data.keys())[0]]).transpose(0,3,1,2)
+			self.output_data = torch.from_numpy(self.output_data[sorted(self.output_data.keys())[0]]).permute(0,3,1,2)
 
 	def __getitem__(self, index):
 
