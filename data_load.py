@@ -42,7 +42,7 @@ class Loader(Dataset):
 
 		if self.aux_data:
 			if random.random() > 0.5:
-				idx = random.choice(np.arange(len(self.output_data)))
+				idx = random.choice(np.arange(len(self.input_list)))
 				inp, out = self.input_list[idx], self.output_data[idx]
 
 			else:
