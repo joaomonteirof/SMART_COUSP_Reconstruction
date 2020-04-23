@@ -11,7 +11,7 @@ class add_noise(nn.Module):
 
 		if self.training and self.input_noise:
 			with torch.no_grad():
-				noise = torch.randn_like(x)*np.random.choice([1e-1, 1e-2, 1e-3, 1e-4, 1e-5])
+				noise = torch.randn_like(x)*np.random.choice([1e-1, 1e-2, 1e-3, 1e-4])
 				if noise.size(0)>1:
 					noise[np.random.choice(np.arange(noise.size(0)), size=noise.size(0)//2, replace=False)] = 0.0
 				x += noise
