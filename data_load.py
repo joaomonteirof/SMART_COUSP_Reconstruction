@@ -20,6 +20,7 @@ class Loader(Dataset):
 		self.rep_times = rep_times
 		self.sample_size = sample_size
 		self.aux_data = True if aux_data is not None else False
+		self.aux_prob = 0.0
 
 		if mask_path:
 			self.mask = sio.loadmat(mask_path)
@@ -41,7 +42,7 @@ class Loader(Dataset):
 	def __getitem__(self, index):
 
 		if self.aux_data:
-			if random.random() > 0.5:
+			if random.random() < self.aux_prob:
 				idx = random.choice(np.arange(len(self.input_list)))
 				inp, out = self.input_list[idx], self.output_data[idx]
 
