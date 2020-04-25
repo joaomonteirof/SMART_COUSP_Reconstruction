@@ -20,7 +20,7 @@ class Loader(Dataset):
 		self.rep_times = rep_times
 		self.sample_size = sample_size
 		self.aux_data = True if aux_data is not None else False
-		self.aux_prob = 0.0
+		self.aux_prob = 0.5
 
 		if mask_path:
 			self.mask = sio.loadmat(mask_path)
