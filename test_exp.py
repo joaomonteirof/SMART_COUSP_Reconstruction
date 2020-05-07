@@ -76,7 +76,11 @@ if __name__ == '__main__':
 
 			for im in data:
 				im = sio.loadmat(im)
-				im_list.append(torch.from_numpy(im[sorted(im.keys())[-1]]).unsqueeze(0).unsqueeze(0))
+				im = im[sorted(im.keys())[-1]]
+				im = torch.from_numpy(im).float().unsqueeze(0).unsqueeze(0)
+				if im.max()>1:
+					im/=255.
+				im_list.append(im)
 
 			im_data = torch.cat(im_list, 0).float()
 
