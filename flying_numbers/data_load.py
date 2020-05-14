@@ -8,8 +8,8 @@ class Loader(Dataset):
 	def __init__(self, data_path):
 		super(Loader, self).__init__()
 
-			self.data = torch.load(data_path)
-			self.n_frames = self.data.size(-1)
+		self.data = torch.load(data_path)
+		self.n_frames = self.data.size(-1)
 
 	def __getitem__(self, index):
 
@@ -28,8 +28,8 @@ class Loader_gen(Dataset):
 	def __init__(self, data_path):
 		super(Loader, self).__init__()
 
-			self.data = torch.load(data_path)
-			self.n_frames = self.data.size(-1)
+		self.data = torch.load(data_path)
+		self.n_frames = self.data.size(-1)
 
 	def __getitem__(self, index):
 
