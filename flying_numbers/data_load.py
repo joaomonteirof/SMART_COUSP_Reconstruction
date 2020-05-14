@@ -1,7 +1,7 @@
 import torch
 import random
 import numpy as np
-from data_prep.offline_input_data_gen import *
+from data_prep.input_data_gen import *
 
 class Loader(Dataset):
 
