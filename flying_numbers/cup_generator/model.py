@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Generator(torch.nn.Module):
-	def __init__(self, input_dim=128, num_filters=[512, 256, 128, 64], output_dim=1):
+	def __init__(self, input_dim=128, num_filters=[1024, 512, 256, 128], output_dim=1):
 		super(Generator, self).__init__()
 
 		# Hidden layers
@@ -54,7 +54,7 @@ class Generator(torch.nn.Module):
 		return out
 
 class Discriminator(torch.nn.Module):
-	def __init__(self, optimizer, lr, betas, input_dim=1, num_filters=[32, 64, 128, 256], output_dim=1, batch_norm=False):
+	def __init__(self, optimizer, lr, betas, input_dim=1, num_filters=[64, 128, 512, 1024], output_dim=1, batch_norm=False):
 		super(Discriminator, self).__init__()
 
 		self.projection = nn.Conv2d(input_dim, 1, kernel_size=8, stride=2, padding=3, bias=False)
