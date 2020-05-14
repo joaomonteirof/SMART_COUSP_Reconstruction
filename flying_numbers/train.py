@@ -3,7 +3,7 @@ import argparse
 import torch
 import models_zoo
 from cup_generator.model import Generator
-from data_load import Loader, Loader_offline
+from data_load import Loader
 from train_loop import TrainLoop
 from torch.utils.data.dataloader import DataLoader
 import torch.optim as optim

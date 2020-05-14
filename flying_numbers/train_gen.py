@@ -13,7 +13,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from cup_generator.model import *
 from cup_generator.train_loop import TrainLoop
-from data_load import Loader_gen, Loader_gen_offline
+from data_load import Loader_gen
 
 parser = argparse.ArgumentParser(description='Hyper volume training of GANs')
 parser.add_argument('--batch-size', type=int, default=64, metavar='N', help='input batch size for training (default: 64)')
