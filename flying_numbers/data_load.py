@@ -1,4 +1,5 @@
 import torch
+from torch.utils.data import Dataset
 import random
 import numpy as np
 from data_prep.input_data_gen import *
