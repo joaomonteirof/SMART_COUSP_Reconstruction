@@ -20,7 +20,6 @@ parser.add_argument('--beta1', type=float, default=0.5, metavar='beta1', help='A
 parser.add_argument('--beta2', type=float, default=0.999, metavar='beta2', help='Adam beta 2 (default: 0.99)')
 parser.add_argument('--max-gnorm', type=float, default=10., metavar='clip', help='Max gradient norm (default: 10.0)')
 parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
-parser.add_argument('--data-path', type=str, default=None, metavar='Path', help='Optional path to pre-saved data')
 parser.add_argument('--checkpoint-epoch', type=int, default=None, metavar='N', help='epoch to load for checkpointing. If None, training starts from scratch')
 parser.add_argument('--checkpoint-path', type=str, default=None, metavar='Path', help='Path for checkpointing')
 parser.add_argument('--generator-path', type=str, default=None, metavar='Path', help='Path for generator params')
