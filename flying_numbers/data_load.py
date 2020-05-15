@@ -14,9 +14,9 @@ class Loader(Dataset):
 
 	def __getitem__(self, index):
 
-		out = self.data[index]
+		out = self.data[index].squeeze().unsqueeze(0).float().contiguous()
 
-		inp = inp = get_streaking_image(out.numpy())
+		inp = get_streaking_image(out.numpy())
 		inp = torch.from_numpy(inp).unsqueeze(0).float().contiguous()
 
 		return inp, out
