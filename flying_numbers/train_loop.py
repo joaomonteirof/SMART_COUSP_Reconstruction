@@ -46,9 +46,6 @@ class TrainLoop(object):
 			print('Epoch {}/{}'.format(self.cur_epoch+1, n_epochs))
 			train_iter = tqdm(enumerate(self.train_loader), total=len(self.train_loader))
 
-			if self.train_loader.dataset.aux_data:
-				self.train_loader.dataset.aux_prob = 0.6*(self.cur_epoch+1)/n_epochs
-
 			train_loss = 0.0
 			valid_loss = 0.0
 
