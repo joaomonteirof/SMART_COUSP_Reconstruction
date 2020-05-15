@@ -32,13 +32,13 @@ class model_gen(nn.Module):
 			nn.Conv2d(1, 512, kernel_size=(5,5), padding=(1,1), stride=(1,1), bias=False),
 			nn.BatchNorm2d(512),
 			nn.ReLU(),
+			nn.Conv2d(512, 512, kernel_size=(5,5), padding=(1,1), stride=(2,2), bias=False),
+			nn.BatchNorm2d(512),
+			nn.ReLU(),
 			nn.Conv2d(512, 256, kernel_size=(5,5), padding=(1,1), stride=(2,2), bias=False),
 			nn.BatchNorm2d(256),
 			nn.ReLU(),
-			nn.Conv2d(256, 128, kernel_size=(5,5), padding=(1,1), stride=(2,2), bias=False),
-			nn.BatchNorm2d(128),
-			nn.ReLU(),
-			nn.Conv2d(128, n_frames, kernel_size=(5,5), padding=(1,1), stride=(2,2), bias=False),
+			nn.Conv2d(256, n_frames, kernel_size=(5,5), padding=(1,1), stride=(2,2), bias=False),
 			nn.BatchNorm2d(n_frames),
 			nn.ReLU() )
 
