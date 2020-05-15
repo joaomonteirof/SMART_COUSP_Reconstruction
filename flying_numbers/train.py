@@ -30,7 +30,7 @@ parser.add_argument('--n-workers', type=int, default=2)
 parser.add_argument('--logdir', type=str, default=None, metavar='Path', help='Path for checkpointing')
 parser.add_argument('--train-data', type=str, default=None, metavar='Path', help='path to auxiliary training data')
 parser.add_argument('--val-data', type=str, default=None, metavar='Path', help='path to auxiliary testing data')
-
+parser.add_argument('--mask-path', type=str, default=None, metavar='Path', help='path to encoding mask')
 args = parser.parse_args()
 args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
@@ -39,8 +39,8 @@ if args.logdir:
 else:
 	writer = None
 
-train_data_set = Loader(data_path=args.train_data)
-valid_data_set = Loader(data_path=args.val_data)
+train_data_set = Loader(data_path=args.train_data, mask_path=args.mask_path)
+valid_data_set = Loader(data_path=args.val_data, mask_path=args.mask_path)
 
 train_loader = DataLoader(train_data_set, batch_size=args.batch_size, shuffle=True, num_workers=args.n_workers)
 valid_loader = DataLoader(valid_data_set, batch_size=args.valid_batch_size, shuffle=False, num_workers=args.n_workers)
