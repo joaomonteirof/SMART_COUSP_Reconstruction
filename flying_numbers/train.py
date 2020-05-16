@@ -53,7 +53,7 @@ model = models_zoo.model_gen(n_frames=train_data_set.n_frames, cuda_mode=args.cu
 generator = Generator().eval()
 
 gen_state = torch.load(args.generator_path, map_location=lambda storage, loc: storage)
-generator.load_state_dict(gen_state['model_state'])
+print(generator.load_state_dict(gen_state['model_state'], strict=True))
 
 if args.pretrained_path:
 	print('\nLoading pretrained model from: {}\n'.format(args.pretrained_path))
