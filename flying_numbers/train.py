@@ -18,6 +18,7 @@ parser.add_argument('--lr', type=float, default=0.0003, metavar='LR', help='lear
 parser.add_argument('--beta1', type=float, default=0.5, metavar='beta1', help='Adam beta 1 (default: 0.5)')
 parser.add_argument('--beta2', type=float, default=0.999, metavar='beta2', help='Adam beta 2 (default: 0.99)')
 parser.add_argument('--max-gnorm', type=float, default=10., metavar='clip', help='Max gradient norm (default: 10.0)')
+parser.add_argument('--add-noise', action='store_true', default=False, help='Acivates Gaussian noise added to inputs (default: False)')
 parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
 parser.add_argument('--checkpoint-epoch', type=int, default=None, metavar='N', help='epoch to load for checkpointing. If None, training starts from scratch')
 parser.add_argument('--checkpoint-path', type=str, default=None, metavar='Path', help='Path for checkpointing')
@@ -38,8 +39,8 @@ if args.logdir:
 else:
 	writer = None
 
-train_data_set = Loader(data_path=args.train_data, mask_path=args.mask_path)
-valid_data_set = Loader(data_path=args.val_data, mask_path=args.mask_path)
+train_data_set = Loader(data_path=args.train_data, mask_path=args.mask_path, add_noise=args.add_noise)
+valid_data_set = Loader(data_path=args.val_data, mask_path=args.mask_path, add_noise=False)
 
 train_loader = DataLoader(train_data_set, batch_size=args.batch_size, shuffle=True, num_workers=args.n_workers)
 valid_loader = DataLoader(valid_data_set, batch_size=args.valid_batch_size, shuffle=False, num_workers=args.n_workers)

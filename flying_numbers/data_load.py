@@ -7,11 +7,12 @@ import scipy.io as sio
 
 class Loader(Dataset):
 
-	def __init__(self, data_path, mask_path=None):
+	def __init__(self, data_path, mask_path=None, add_noise=False):
 		super(Loader, self).__init__()
 
 		self.data = torch.load(data_path)
 		self.n_frames = self.data.size(-1)
+		self.add_noise = add_noise
 		if mask_path:
 			self.mask = sio.loadmat(mask_path)
 			self.mask = self.mask[sorted(self.mask.keys())[-1]]
@@ -24,9 +25,11 @@ class Loader(Dataset):
 
 		inp = get_streaking_image(out.numpy(), self.mask)
 		inp = torch.from_numpy(inp).unsqueeze(0).float().contiguous()
-		if random.random()>0.5:
-			inp += torch.randn_like(inp)*random.choice([1e-2, 1e-3, 1e-4, 1e-5])
-			inp.clamp_(0.0, 1.0)
+
+		if self.add_noise:
+			if random.random()>0.5:
+				inp += torch.randn_like(inp)*random.choice([1e-2, 1e-3, 1e-4, 1e-5])
+				inp.clamp_(0.0, 1.0)
 
 		out = out.squeeze().unsqueeze(0).float().contiguous()
 
