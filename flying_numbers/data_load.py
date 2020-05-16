@@ -3,7 +3,6 @@ from torch.utils.data import Dataset
 import random
 import numpy as np
 from data_prep.input_data_gen import *
-import scipy.io as sio
 
 class Loader(Dataset):
 
@@ -14,8 +13,7 @@ class Loader(Dataset):
 		self.n_frames = self.data.size(-1)
 		self.add_noise = add_noise
 		if mask_path:
-			self.mask = sio.loadmat(mask_path)
-			self.mask = self.mask[sorted(self.mask.keys())[-1]]
+			self.mask = np.load(mask_path)
 		else:
 			self.mask = None
 
