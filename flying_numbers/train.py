@@ -75,6 +75,9 @@ optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(args.beta1, args.b
 
 trainer = TrainLoop(model, generator, optimizer, train_loader, valid_loader, max_gnorm=args.max_gnorm, checkpoint_path=args.checkpoint_path, checkpoint_epoch=args.checkpoint_epoch, cuda=args.cuda, logger=writer)
 
-print(args)
+args_dict = dict(vars(args))
+for key in args_dict:
+	print('{}: {}'.format(key, args_dict[key]))
+print('\n')
 
 trainer.train(n_epochs=args.epochs, save_every = args.save_every)
