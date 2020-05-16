@@ -15,17 +15,20 @@ class model_gen(nn.Module):
 			nn.Conv2d(1, 512, kernel_size=(5,5), padding=(1,1), stride=(1,1), bias=False),
 			nn.BatchNorm2d(512),
 			nn.ReLU(),
-			nn.Conv2d(512, 512, kernel_size=(5,5), padding=(1,1), stride=(2,2), bias=False),
+			nn.Conv2d(512, 512, kernel_size=(5,5), padding=(1,1), stride=(1,1), bias=False),
 			nn.BatchNorm2d(512),
 			nn.ReLU(),
 			nn.Conv2d(512, 256, kernel_size=(5,5), padding=(1,1), stride=(2,2), bias=False),
 			nn.BatchNorm2d(256),
 			nn.ReLU(),
-			nn.Conv2d(256, n_frames, kernel_size=(5,5), padding=(1,1), stride=(2,2), bias=False),
+			nn.Conv2d(256, 128, kernel_size=(5,5), padding=(1,1), stride=(2,2), bias=False),
+			nn.BatchNorm2d(128),
+			nn.ReLU(),
+			nn.Conv2d(128, n_frames, kernel_size=(3,3), padding=(1,1), stride=(1,1), bias=False),
 			nn.BatchNorm2d(n_frames),
 			nn.ReLU() )
 
-		self.lstm = nn.LSTM(54, 128, 2, bidirectional=True, batch_first=False)
+		self.lstm = nn.LSTM(266, 128, 2, bidirectional=True, batch_first=False)
 
 		self.fc = nn.Linear(128*2, 128)
 
@@ -33,6 +36,8 @@ class model_gen(nn.Module):
 
 		x = self.features(x).squeeze(1).transpose(1,0)
 		x = x.view(x.size(0), x.size(1), -1)
+
+		print(x.size())
 
 		batch_size = x.size(1)
 		seq_size = x.size(0)
