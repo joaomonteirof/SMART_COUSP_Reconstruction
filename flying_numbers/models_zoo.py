@@ -37,8 +37,6 @@ class model_gen(nn.Module):
 		x = self.features(x).squeeze(1).transpose(1,0)
 		x = x.view(x.size(0), x.size(1), -1)
 
-		print(x.size())
-
 		batch_size = x.size(1)
 		seq_size = x.size(0)
 
