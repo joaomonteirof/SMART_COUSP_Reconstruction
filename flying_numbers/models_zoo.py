@@ -11,8 +11,6 @@ class model_gen(nn.Module):
 
 		## Assuming (64, 83) inputs
 
-		self.noise_layer = add_noise(input_noise)
-
 		self.features = nn.Sequential(
 			nn.Conv2d(1, 512, kernel_size=(5,5), padding=(1,1), stride=(1,1), bias=False),
 			nn.BatchNorm2d(512),
