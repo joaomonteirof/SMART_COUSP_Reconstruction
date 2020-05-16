@@ -7,6 +7,5 @@
 *.jpg
 *.JPEG
 *.png
-*.mat
 *.sh
 *.DS_Store
