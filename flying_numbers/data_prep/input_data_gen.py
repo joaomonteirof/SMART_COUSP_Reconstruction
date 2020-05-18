@@ -43,9 +43,7 @@ def get_streaking_image(x, mask=None):
 
 	for i in range(D_t):
 		idx = D_t-i-1
-		im=x[:,:,idx].T
-		im = cv2.warpPerspective(src=im, M=MATRIX_TRANSFORM, dsize=(D_x, D_y)).T
-		x_out[:,i:i+D_y,i] = im
+		x_out[:,i:i+D_y,i] = x[:,:,idx]
 
 	y1=np.multiply(x_out, Cu)
 	y1 = y1.sum(2)
