@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Generator(torch.nn.Module):
-	def __init__(self, input_dim=128, num_filters=[1024, 512, 256, 128], output_dim=1):
+	def __init__(self, input_dim=256, num_filters=[1024, 512, 256, 128], output_dim=1):
 		super(Generator, self).__init__()
 
 		# Hidden layers

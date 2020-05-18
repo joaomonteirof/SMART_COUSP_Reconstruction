@@ -28,9 +28,9 @@ class model_gen(nn.Module):
 			nn.BatchNorm2d(n_frames),
 			nn.ReLU() )
 
-		self.lstm = nn.LSTM(266, 128, 2, bidirectional=True, batch_first=False)
+		self.lstm = nn.LSTM(266, 256, 2, bidirectional=True, batch_first=False)
 
-		self.fc = nn.Linear(128*2, 128)
+		self.fc = nn.Linear(256*2, 256)
 
 	def forward(self, x):
 
@@ -40,8 +40,8 @@ class model_gen(nn.Module):
 		batch_size = x.size(1)
 		seq_size = x.size(0)
 
-		h0 = torch.zeros(4, batch_size, 128)
-		c0 = torch.zeros(4, batch_size, 128)
+		h0 = torch.zeros(4, batch_size, 256)
+		c0 = torch.zeros(4, batch_size, 256)
 
 		if self.cuda_mode:
 			h0 = h0.cuda()
