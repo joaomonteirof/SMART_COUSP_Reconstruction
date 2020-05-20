@@ -111,14 +111,11 @@ class TrainLoop(object):
 
 		out = self.model.forward(x)
 
-		loss = 0
-		frames_list = []
+		loss = 0.0
 
 		for i in range(out.size(1)):
-
 			gen_frame = self.generator(out[:,i,:])
-			frames_list.append(gen_frame)
-			loss += torch.nn.functional.mse_loss(frames_list[-1], y[:,:,:,:,i])
+			loss += torch.nn.functional.mse_loss(gen_frame, y[...,i])
 
 		loss.backward()
 		grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_gnorm)
