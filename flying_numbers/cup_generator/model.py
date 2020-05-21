@@ -54,7 +54,7 @@ class Generator(torch.nn.Module):
 		return out
 
 class Discriminator(torch.nn.Module):
-	def __init__(self, optimizer, lr, betas, input_dim=1, num_filters=[64, 128, 512, 1024], output_dim=1, batch_norm=False):
+	def __init__(self, optimizer, lr, betas, input_dim=1, num_filters=[128, 256, 512, 1024], output_dim=1, batch_norm=False):
 		super(Discriminator, self).__init__()
 
 		self.projection = nn.Conv2d(input_dim, 1, kernel_size=8, stride=2, padding=3, bias=False)
