@@ -27,30 +27,38 @@ def to_binary(img, level):
 
 	return bin_img
 
-def get_streaking_image(x, mask=None):
+def get_streaking_image(x, mask=None, intensity_variation=True):
 
 	D_x, D_y, D_t = x.shape
 
 	if mask is None:
 		mask = np.ones([D_x, D_y])
 
+	x[:, :, :3] = 0.0 ## ignores first 3 frames
+
 	Cu=np.zeros([D_x,D_y+D_t-1,D_t])
 
 	for i in range(D_t):
-		Cu[:,i:i+D_y,i]=mask
+		if i>=3:
+			Cu[:,i:i+D_y,i]=mask
 
 	x_out = np.zeros(Cu.shape)
 
 	for i in range(D_t):
 		idx = D_t-i-1
-		x_out[:,i:i+D_y,i] = x[:,:,idx]
+		im=x[:,:,idx].T
+		if idx>=3:
+			if intensity_variation:
+				im *= (1.0-0.1*random.random()) ## randomly changes the intensity of each frame to simulate the fluctuation of laser intensity
+			im = cv2.warpPerspective(src=im, M=MATRIX_TRANSFORM, dsize=(D_x, D_y)).T
+		x_out[:,i:i+D_y,i] = im
 
 	y1=np.multiply(x_out, Cu)
 	y1 = y1.sum(2)
 	y1 = normalize(y1)
 
 	return y1
-		
+
 if __name__ == "__main__":
 
 	# Data settings
