@@ -26,7 +26,7 @@ class Loader(Dataset):
 
 		if self.add_noise:
 			if random.random()>0.5:
-				inp += torch.randn_like(inp)*random.choice([1e-1, 1e-2, 1e-3, 1e-4])
+				inp += torch.randn_like(inp)*random.choice([1e-1, 1e-2, 1e-3])
 				inp.clamp_(0.0, 1.0)
 
 		out = out.squeeze().unsqueeze(0).float().contiguous()
