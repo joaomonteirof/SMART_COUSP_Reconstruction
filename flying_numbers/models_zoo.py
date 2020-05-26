@@ -12,25 +12,22 @@ class model_gen(nn.Module):
 		## Assuming (64, 83) inputs
 
 		self.features = nn.Sequential(
-			nn.Conv2d(1, 128, kernel_size=(7,7), padding=(1,1), stride=(1,1), bias=False),
+			nn.Conv2d(1, 128, kernel_size=(5,5), padding=(1,1), stride=(1,1), bias=True),
 			nn.BatchNorm2d(128),
 			nn.ReLU(),
-			nn.Conv2d(128, 128, kernel_size=(5,5), padding=(1,1), stride=(1,1), bias=False),
-			nn.BatchNorm2d(128),
-			nn.ReLU(),
-			nn.Conv2d(128, 64, kernel_size=(5,5), padding=(1,1), stride=(2,2), bias=False),
+			nn.Conv2d(128, 64, kernel_size=(5,5), padding=(1,1), stride=(2,2), bias=True),
 			nn.BatchNorm2d(64),
 			nn.ReLU(),
-			nn.Conv2d(64, 32, kernel_size=(3,3), padding=(1,1), stride=(2,2), bias=False),
+			nn.Conv2d(64, 32, kernel_size=(3,3), padding=(1,1), stride=(2,2), bias=True),
 			nn.BatchNorm2d(32),
 			nn.ReLU(),
-			nn.Conv2d(32, n_frames, kernel_size=(3,3), padding=(1,1), stride=(1,1), bias=False),
+			nn.Conv2d(32, n_frames, kernel_size=(3,3), padding=(1,1), stride=(1,1), bias=True),
 			nn.BatchNorm2d(n_frames),
 			nn.ReLU() )
 
-		self.lstm = nn.LSTM(238, 128, 1, bidirectional=True, batch_first=False)
+		self.lstm = nn.LSTM(270, 256, 2, bidirectional=True, batch_first=False)
 
-		self.fc = nn.Linear(128*2, 256)
+		self.fc = nn.Linear(256*2, 256)
 
 	def forward(self, x):
 
@@ -40,8 +37,8 @@ class model_gen(nn.Module):
 		batch_size = x.size(1)
 		seq_size = x.size(0)
 
-		h0 = torch.zeros(2, batch_size, 128)
-		c0 = torch.zeros(2, batch_size, 128)
+		h0 = torch.zeros(2*2, batch_size, 256)
+		c0 = torch.zeros(2*2, batch_size, 256)
 
 		if self.cuda_mode:
 			h0 = h0.cuda()
