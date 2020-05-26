@@ -28,7 +28,7 @@ class model_gen(nn.Module):
 			nn.BatchNorm2d(n_frames),
 			nn.ReLU() )
 
-		self.lstm = nn.LSTM(266, 128, 1, bidirectional=True, batch_first=False)
+		self.lstm = nn.LSTM(238, 128, 1, bidirectional=True, batch_first=False)
 
 		self.fc = nn.Linear(128*2, 256)
 

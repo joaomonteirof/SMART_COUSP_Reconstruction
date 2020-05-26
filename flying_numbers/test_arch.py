@@ -19,7 +19,7 @@ if args.cuda:
 	model = model.cuda()
 	generator = generator.cuda()
 
-dummy_input = torch.rand(10, 1, 64, 83)
+dummy_input = torch.rand(10, 1, 64, 73)
 
 out_seq = model(dummy_input)
 

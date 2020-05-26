@@ -29,6 +29,9 @@ def to_binary(img, level):
 
 def get_streaking_image(x, mask=None, intensity_variation=True):
 
+	start_idx =random.randint(0, x.shape[-1]//2-1)
+	x = x[..., start_idx:(start_idx+10)]
+
 	D_x, D_y, D_t = x.shape
 
 	if mask is None:
