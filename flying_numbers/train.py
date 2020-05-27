@@ -18,7 +18,6 @@ parser.add_argument('--lr', type=float, default=0.0003, metavar='LR', help='lear
 parser.add_argument('--beta1', type=float, default=0.5, metavar='beta1', help='Adam beta 1 (default: 0.5)')
 parser.add_argument('--beta2', type=float, default=0.999, metavar='beta2', help='Adam beta 2 (default: 0.99)')
 parser.add_argument('--max-gnorm', type=float, default=10., metavar='clip', help='Max gradient norm (default: 10.0)')
-parser.add_argument('--add-noise', action='store_true', default=False, help='Acivates Gaussian noise added to inputs (default: False)')
 parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
 parser.add_argument('--checkpoint-epoch', type=int, default=None, metavar='N', help='epoch to load for checkpointing. If None, training starts from scratch')
 parser.add_argument('--checkpoint-path', type=str, default=None, metavar='Path', help='Path for checkpointing')
@@ -28,8 +27,13 @@ parser.add_argument('--seed', type=int, default=1, metavar='S', help='random see
 parser.add_argument('--save-every', type=int, default=5, metavar='N', help='how many batches to wait before logging training status. (default: 5)')
 parser.add_argument('--n-workers', type=int, default=2)
 parser.add_argument('--logdir', type=str, default=None, metavar='Path', help='Path for checkpointing')
-parser.add_argument('--train-data', type=str, default=None, metavar='Path', help='path to auxiliary training data')
-parser.add_argument('--val-data', type=str, default=None, metavar='Path', help='path to auxiliary testing data')
+### Data options
+parser.add_argument('--im-size', type=int, default=64, metavar='N', help='H and W of frames (default: 64)')
+parser.add_argument('--n-digits', type=int, default=2, metavar='N', help='Number of bouncing digits (default: 2)')
+parser.add_argument('--n-frames', type=int, default=40, metavar='N', help='Number of frames per sample (default: 40)')
+parser.add_argument('--rep-times', type=int, default=1, metavar='N', help='Number of times consecutive frames are repeated. No rep is equal to 1 (default: 1)')
+parser.add_argument('--train-examples', type=int, default=50000, metavar='N', help='Number of training examples (default: 50000)')
+parser.add_argument('--val-examples', type=int, default=5000, metavar='N', help='Number of validation examples (default: 500)')
 parser.add_argument('--mask-path', type=str, default=None, metavar='Path', help='path to encoding mask')
 args = parser.parse_args()
 args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
@@ -39,8 +43,8 @@ if args.logdir:
 else:
 	writer = None
 
-train_data_set = Loader(data_path=args.train_data, mask_path=args.mask_path, add_noise=args.add_noise)
-valid_data_set = Loader(data_path=args.val_data, mask_path=args.mask_path, add_noise=False)
+train_data_set = Loader(im_size=args.im_size, n_objects=args.n_digits, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.train_examples, mask_path=args.mask_path)
+valid_data_set = Loader(im_size=args.im_size, n_objects=args.n_digits, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.val_examples, mask_path=args.mask_path)
 
 train_loader = DataLoader(train_data_set, batch_size=args.batch_size, shuffle=True, num_workers=args.n_workers)
 valid_loader = DataLoader(valid_data_set, batch_size=args.valid_batch_size, shuffle=False, num_workers=args.n_workers)

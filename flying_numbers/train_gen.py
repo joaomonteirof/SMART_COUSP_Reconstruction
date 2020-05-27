@@ -25,7 +25,6 @@ parser.add_argument('--beta2', type=float, default=0.999, metavar='lambda', help
 parser.add_argument('--ndiscriminators', type=int, default=8, help='Number of discriminators. Default=8')
 parser.add_argument('--checkpoint-epoch', type=int, default=None, metavar='N', help='epoch to load for checkpointing. If None, training starts from scratch')
 parser.add_argument('--checkpoint-path', type=str, default=None, metavar='Path', help='Path for checkpointing')
-parser.add_argument('--train-data', type=str, default=None, metavar='Path', help='path to training data')
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
 parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
 parser.add_argument('--save-every', type=int, default=5, metavar='N', help='how many epochs to wait before logging training status. Default is 5')
@@ -36,6 +35,11 @@ parser.add_argument('--no-cuda', action='store_true', default=False, help='Disab
 parser.add_argument('--sgd', action='store_true', default=False, help='enables SGD - *MGD only* ')
 parser.add_argument('--job-id', type=str, default=None, help='Arbitrary id to be written on checkpoints')
 parser.add_argument('--logdir', type=str, default=None, metavar='Path', help='Path for checkpointing')
+### Data options
+parser.add_argument('--im-size', type=int, default=64, metavar='N', help='H and W of frames (default: 64)')
+parser.add_argument('--n-digits', type=int, default=2, metavar='N', help='Number of bouncing digits (default: 2)')
+parser.add_argument('--n-frames', type=int, default=40, metavar='N', help='Number of frames per sample (default: 40)')
+parser.add_argument('--n-examples', type=int, default=50000, metavar='N', help='Number of training examples (default: 50000)')
 args = parser.parse_args()
 args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
@@ -48,7 +52,7 @@ if args.logdir:
 else:
 	writer = None
 
-trainset = Loader_gen(data_path=args.train_data)
+trainset = Loader_gen(im_size=args.im_size, n_objects=args.n_digits, n_frames=args.n_frames, sample_size=args.n_examples)
 
 train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, num_workers=args.workers)
 
