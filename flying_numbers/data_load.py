@@ -187,7 +187,7 @@ class Loader_gen(Dataset):
 
 if __name__=='__main__':
 
-	test_dataset = Loader(200, 3, 50, 2, 100)
+	test_dataset = Loader(im_size=64, n_objects=2, n_frames=40, rep_times=2, sample_size=100)
 
 	print(test_dataset.mask)
 
@@ -199,7 +199,7 @@ if __name__=='__main__':
 
 	print(inp_.min(), out_.min())
 
-	test_dataset = Loader_gen(200, 3, 50, 100)
+	test_dataset = Loader_gen(im_size=64, n_objects=2, n_frames=40, sample_size=100)
 
 	out_ = test_dataset.__getitem__(10)
 
