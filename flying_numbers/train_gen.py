@@ -69,6 +69,11 @@ if args.cuda:
 		disc = disc.cuda()
 	torch.backends.cudnn.benchmark=True
 
+print(generator)
+print('\n')
+print(disc)
+print('\n')
+
 if args.train_mode == 'mgd' and args.sgd:
 	optimizer = optim.SGD(generator.parameters(), lr=args.mgd_lr)
 else:
@@ -76,8 +81,9 @@ else:
 
 trainer = TrainLoop(generator, disc_list, optimizer, train_loader, nadir_slack=args.nadir_slack, alpha=args.alpha, train_mode=args.train_mode, checkpoint_path=args.checkpoint_path, checkpoint_epoch=args.checkpoint_epoch, cuda=args.cuda, job_id=args.job_id, logger=writer)
 
-print('Cuda Mode is: {}'.format(args.cuda))
-print('Train Mode is: {}'.format(args.train_mode))
-print('Number of discriminators is: {}'.format(len(disc_list)))
+args_dict = dict(vars(args))
+for arg_key in args_dict:
+	print('{}: {}'.format(arg_key, args_dict[arg_key]))
+print('\n')
 
 trainer.train(n_epochs=args.epochs, save_every=args.save_every)
