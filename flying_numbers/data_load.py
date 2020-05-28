@@ -5,6 +5,7 @@ import numpy as np
 from torch.utils.data import Dataset
 from data_prep.input_data_gen import *
 import torchvision
+import torchvision.transforms as transforms
 
 class Loader(Dataset):
 
@@ -15,9 +16,9 @@ class Loader(Dataset):
 		self.n_frames = n_frames
 		self.rep_times = rep_times
 		self.sample_size = sample_size
-		self.digit_size_ = 28
+		self.digit_size_ = 21
 		self.step_length_ = 0.1
-		self.mnist = torchvision.datasets.MNIST('./', train=True, transform=torchvision.transforms.ToTensor(), target_transform=None, download=True)
+		self.mnist = torchvision.datasets.MNIST('./', train=True, transform=transforms.Compose([transforms.CenterCrop(21), transforms.ToTensor()]), target_transform=None, download=True)
 
 		if mask_path:
 			self.mask = sio.loadmat(mask_path)
@@ -83,25 +84,26 @@ class Loader(Dataset):
 			y += v_y * self.step_length_
 			x += v_x * self.step_length_
 
-		# Bounce off edges.
-		if x <= 0:
-			x = 0
-			v_x = -v_x
-		if x >= 1.0:
-			x = 1.0
-			v_x = -v_x
-		if y <= 0:
-			y = 0
-			v_y = -v_y
-		if y >= 1.0:
-			y = 1.0
-			v_y = -v_y
-		start_y[i] = y
-		start_x[i] = x
+			# Bounce off edges.
+			if x <= 0:
+				x = 0
+				v_x = -v_x
+			if x >= 1.0:
+				x = 1.0
+				v_x = -v_x
+			if y <= 0:
+				y = 0
+				v_y = -v_y
+			if y >= 1.0:
+				y = 1.0
+				v_y = -v_y
+			start_y[i] = y
+			start_x[i] = x
 
 		# Scale to the size of the canvas.
 		start_y = (canvas_size * start_y).astype(np.int32)
 		start_x = (canvas_size * start_x).astype(np.int32)
+
 		return start_y, start_x
 
 class Loader_gen(Dataset):
@@ -112,9 +114,9 @@ class Loader_gen(Dataset):
 		self.n_objects = n_objects
 		self.n_frames = n_frames
 		self.sample_size = sample_size
-		self.digit_size_ = 28
+		self.digit_size_ = 21
 		self.step_length_ = 0.1
-		self.mnist = torchvision.datasets.MNIST('./', train=True, transform=torchvision.transforms.ToTensor(), target_transform=None, download=True)
+		self.mnist = torchvision.datasets.MNIST('./', train=True, transform=transforms.Compose([transforms.CenterCrop(21), transforms.ToTensor()]), target_transform=None, download=True)
 
 	def __getitem__(self, index):
 
@@ -164,21 +166,21 @@ class Loader_gen(Dataset):
 			y += v_y * self.step_length_
 			x += v_x * self.step_length_
 
-		# Bounce off edges.
-		if x <= 0:
-			x = 0
-			v_x = -v_x
-		if x >= 1.0:
-			x = 1.0
-			v_x = -v_x
-		if y <= 0:
-			y = 0
-			v_y = -v_y
-		if y >= 1.0:
-			y = 1.0
-			v_y = -v_y
-		start_y[i] = y
-		start_x[i] = x
+			# Bounce off edges.
+			if x <= 0:
+				x = 0
+				v_x = -v_x
+			if x >= 1.0:
+				x = 1.0
+				v_x = -v_x
+			if y <= 0:
+				y = 0
+				v_y = -v_y
+			if y >= 1.0:
+				y = 1.0
+				v_y = -v_y
+			start_y[i] = y
+			start_x[i] = x
 
 		# Scale to the size of the canvas.
 		start_y = (canvas_size * start_y).astype(np.int32)
@@ -187,13 +189,23 @@ class Loader_gen(Dataset):
 
 if __name__=='__main__':
 
-	test_dataset = Loader(im_size=64, n_objects=2, n_frames=40, rep_times=2, sample_size=100)
+	test_dataset = Loader(im_size=64, n_objects=2, n_frames=40, rep_times=1, sample_size=100)
 
 	print(test_dataset.mask)
 
 	inp_, out_ = test_dataset.__getitem__(10)
 
+	out_ = out_.squeeze(0).numpy()
+
 	print(inp_.shape, out_.shape)
+
+	import matplotlib.pyplot as plt
+
+	im = plt.imshow(out_[...,-1])
+	for i in range(out_.shape[-1]):
+		im.set_data(out_[...,i])
+		plt.pause(0.02)
+	plt.show()
 
 	print(inp_.max(), out_.max())
 
