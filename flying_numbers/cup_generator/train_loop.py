@@ -88,7 +88,7 @@ class TrainLoop(object):
 		## Train each D
 
 		x = batch
-		z_ = torch.randn(x.size(0), 256).view(-1, 256, 1, 1)
+		z_ = torch.randn(x.size(0), 100).view(-1, 100, 1, 1)
 		y_real_ = torch.ones(x.size(0))
 		y_fake_ = torch.zeros(x.size(0))
 
