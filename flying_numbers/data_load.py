@@ -21,8 +21,7 @@ class Loader(Dataset):
 		self.mnist = torchvision.datasets.MNIST('./', train=True, transform=transforms.Compose([transforms.CenterCrop(21), transforms.ToTensor()]), target_transform=None, download=True)
 
 		if mask_path:
-			self.mask = sio.loadmat(mask_path)
-			self.mask = self.mask[sorted(self.mask.keys())[-1]]
+			self.mask = np.load(mask_path)
 		else:
 			self.mask = None
 
