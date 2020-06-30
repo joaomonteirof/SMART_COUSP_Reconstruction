@@ -16,8 +16,8 @@ parser.add_argument('--batch-size', type=int, default=64, metavar='N', help='inp
 parser.add_argument('--valid-batch-size', type=int, default=128, metavar='N', help='input batch size for testing (default: 128)')
 parser.add_argument('--epochs', type=int, default=200, metavar='N', help='number of epochs to train (default: 200)')
 parser.add_argument('--lr', type=float, default=0.0003, metavar='LR', help='learning rate (default: 0.0002)')
-parser.add_argument('--l2', type=float, default=1e-5, metavar='lambda', help='L2 wheight decay coefficient (default: 0.00001)')
-parser.add_argument('--momentum', type=float, default=0.9, metavar='m', help='Momentum paprameter (default: 0.9)')
+parser.add_argument('--beta1', type=float, default=0.5, metavar='beta1', help='Adam beta 1 (default: 0.5)')
+parser.add_argument('--beta2', type=float, default=0.999, metavar='beta2', help='Adam beta 2 (default: 0.99)')
 parser.add_argument('--max-gnorm', type=float, default=10., metavar='clip', help='Max gradient norm (default: 10.0)')
 parser.add_argument('--warmup', type=int, default=4000, metavar='N', help='Iterations until reach lr (default: 4000)')
 parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
@@ -77,7 +77,7 @@ print('\n')
 print(generator)
 print('\n')
 
-optimizer = TransformerOptimizer(optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.l2, nesterov=True), 
+optimizer = TransformerOptimizer(optim.Adam(model.parameters(), lr=args.lr, betas=(args.beta1, args.beta2)), 
 			lr=args.lr, 
 			warmup_steps=args.warmup)
 
