@@ -7,6 +7,7 @@ import time
 
 # Training settings
 parser = argparse.ArgumentParser(description='test models')
+parser.add_argument('--batch-size', type=int, default=1, metavar='N', help='Batch size (default: 1)')
 parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
 parser.add_argument('--n-frames', type=int, default=100, metavar='N', help='Number of frames per sample (default: 100)')
 args = parser.parse_args()
@@ -20,7 +21,7 @@ if args.cuda:
 	model = model.cuda().eval()
 	generator = generator.cuda().eval()
 
-dummy_input = torch.rand(1, 1, 256, 355).to(next(model.parameters()).device)
+dummy_input = torch.rand(args.batch_size, 1, 256, 355).to(next(model.parameters()).device)
 
 start = time.time()
 
