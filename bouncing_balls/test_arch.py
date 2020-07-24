@@ -25,12 +25,14 @@ dummy_input = torch.rand(args.batch_size, 1, 256, 355).to(next(model.parameters(
 
 start = time.time()
 
-out_seq = model(dummy_input)
+with torch.no_grad():
 
-end_single_frame = time.time()
+	out_seq = model(dummy_input)
 
-for i in range(out_seq.size(1)):
-	gen_frame = generator(out_seq[:,i,:].squeeze(1).contiguous())
+	end_single_frame = time.time()
+
+	for i in range(out_seq.size(1)):
+		gen_frame = generator(out_seq[:,i,:].squeeze(1).contiguous())
 
 end_full_reconstruction = time.time()
 
