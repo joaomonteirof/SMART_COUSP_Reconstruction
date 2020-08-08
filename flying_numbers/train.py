@@ -38,11 +38,6 @@ parser.add_argument('--mask-path', type=str, default=None, metavar='Path', help=
 args = parser.parse_args()
 args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
-if args.logdir:
-	writer = SummaryWriter(log_dir=args.logdir, comment='reconstruction', purge_step=True if args.checkpoint_epoch is None else False)
-else:
-	writer = None
-
 train_data_set = Loader(im_size=args.im_size, n_objects=args.n_digits, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.train_examples, mask_path=args.mask_path)
 valid_data_set = Loader(im_size=args.im_size, n_objects=args.n_digits, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.val_examples, mask_path=args.mask_path)
 
@@ -76,6 +71,11 @@ print(generator)
 print('\n')
 
 optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
+
+if args.logdir:
+	writer = SummaryWriter(log_dir=args.logdir, comment='reconstruction', purge_step=0 if args.checkpoint_epoch is None else int(args.checkpoint_epoch*len(train_loader)))
+else:
+	writer = None
 
 trainer = TrainLoop(model, generator, optimizer, train_loader, valid_loader, max_gnorm=args.max_gnorm, checkpoint_path=args.checkpoint_path, checkpoint_epoch=args.checkpoint_epoch, cuda=args.cuda, logger=writer)
 

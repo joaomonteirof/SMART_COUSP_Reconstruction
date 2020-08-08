@@ -43,11 +43,6 @@ parser.add_argument('--aux-val-data', type=str, default=None, metavar='Path', he
 args = parser.parse_args()
 args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
-if args.logdir:
-	writer = SummaryWriter(log_dir=args.logdir, comment='reconstruction', purge_step=True if args.checkpoint_epoch is None else False)
-else:
-	writer = None
-
 if args.data_path:
 	train_data_set = Loader_offline(input_file_name=args.data_path+'input_valid.hdf', output_file_name=args.data_path+'output_valid.hdf')
 	valid_data_set = Loader_offline(input_file_name=args.data_path+'input_valid.hdf', output_file_name=args.data_path+'output_valid.hdf')
@@ -85,6 +80,11 @@ print(generator)
 print('\n')
 
 optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
+
+if args.logdir:
+	writer = SummaryWriter(log_dir=args.logdir, comment='reconstruction', purge_step=0 if args.checkpoint_epoch is None else int(args.checkpoint_epoch*len(train_loader)))
+else:
+	writer = None
 
 trainer = TrainLoop(model, generator, optimizer, train_loader, valid_loader, max_gnorm=args.max_gnorm, checkpoint_path=args.checkpoint_path, checkpoint_epoch=args.checkpoint_epoch, cuda=args.cuda, logger=writer)
 
