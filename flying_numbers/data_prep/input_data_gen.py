@@ -41,7 +41,7 @@ def get_streaking_image(x, mask=None, intensity_variation=True):
 
 	for i in range(D_t):
 		idx = D_t-i-1
-		im=x[:,:,idx].T
+		im=x[:,:,idx]
 		if idx>=3:
 			if intensity_variation:
 				im *= (1.0-0.1*random.random()) ## randomly changes the intensity of each frame to simulate the fluctuation of laser intensity
