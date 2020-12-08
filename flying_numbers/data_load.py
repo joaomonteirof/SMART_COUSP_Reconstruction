@@ -194,6 +194,8 @@ if __name__=='__main__':
 
 	inp_, out_ = test_dataset.__getitem__(10)
 
+	print(inp_.shape, out_.shape)
+
 	out_ = out_.squeeze(0).numpy()
 
 	print(inp_.shape, out_.shape)
