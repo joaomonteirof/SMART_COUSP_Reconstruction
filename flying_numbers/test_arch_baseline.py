@@ -9,6 +9,8 @@ parser.add_argument('--n-frames', type=int, default=40, metavar='N', help='Numbe
 parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
 args = parser.parse_args()
 
+print(args)
+
 model = models_zoo.model_baseline(n_frames=args.n_frames)
 dummy_input = torch.rand(10, 1, 64, 64, args.n_frames)
 
