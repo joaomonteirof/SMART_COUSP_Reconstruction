@@ -73,7 +73,7 @@ def get_video_from_streaking_image(x, n_frames, mask):
 
 	input_video = video_shift[:, :D_y, :]
 
-	return torch.from_numpy(np.expand_dims(input_video, axis=0))
+	return torch.from_numpy(np.expand_dims(input_video, axis=0)).float()
 
 if __name__ == "__main__":
 
