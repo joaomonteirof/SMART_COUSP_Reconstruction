@@ -62,7 +62,7 @@ class TrainLoop(object):
 			# Validation
 
 			for t, batch in enumerate(self.valid_loader):
-				new_valid_loss, input_streaking_images, frames_list, target_scenes = self.valid(batch)
+				new_valid_loss, approximate_scenes, frames_list, target_scenes = self.valid(batch)
 				valid_loss += new_valid_loss
 
 			self.history['valid_loss'].append(valid_loss/(t+1))
@@ -70,10 +70,8 @@ class TrainLoop(object):
 			if self.logger:
 				self.logger.add_scalar('Valid/MSE', self.history['valid_loss'][-1], self.total_iters)
 				self.logger.add_scalar('Valid/Best_MSE', np.min(self.history['valid_loss']), self.total_iters)
-				grid_streaking = torchvision.utils.make_grid(input_streaking_images)
-				self.logger.add_image('Inputs', grid_streaking, self.total_iters)
-				z_ = torch.randn(8, 100).view(-1, 100, 1, 1).to(target_scenes.device)
 				self.logger.add_video('Reconstructed', torch.cat(frames_list, 1), self.total_iters)
+				self.logger.add_video('Approximate_scenes', approximate_scenes.permute(0,4,1,2,3), self.total_iters)				
 				self.logger.add_video('Target_scenes', target_scenes.permute(0,4,1,2,3), self.total_iters)
 
 			print('Total train loss: {}'.format(self.history['train_loss'][-1]))
