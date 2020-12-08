@@ -139,7 +139,7 @@ class TrainLoop(object):
 			for i in range(out.size(-1)):
 				gen_frame = out[...,i]
 				loss += torch.nn.functional.mse_loss(gen_frame, y[...,i])
-				frames_list.append(gen_frame)
+				frames_list.append(gen_frame.unsqueeze(1))
 
 		return loss.item(), x, frames_list, y
 
