@@ -25,4 +25,4 @@ print(out_rec.size())
 
 for i in range(out_rec.size(-1)):
 	gen_frame = out_rec[...,i]
-	print(i, gen_frame.size())
+	print(i, gen_frame.unsqueeze(1).size())
