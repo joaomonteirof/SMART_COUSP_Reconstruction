@@ -32,12 +32,12 @@ parser.add_argument('--n-frames', type=int, default=40, metavar='N', help='Numbe
 parser.add_argument('--rep-times', type=int, default=1, metavar='N', help='Number of times consecutive frames are repeated. No rep is equal to 1 (default: 1)')
 parser.add_argument('--train-examples', type=int, default=50000, metavar='N', help='Number of training examples (default: 50000)')
 parser.add_argument('--val-examples', type=int, default=5000, metavar='N', help='Number of validation examples (default: 500)')
-parser.add_argument('--mask-path', type=str, default=None, metavar='Path', help='path to encoding mask')
+parser.add_argument('--mask-path', type=str, default='./mask.npy', metavar='Path', help='path to encoding mask')
 args = parser.parse_args()
 args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
-train_data_set = Loader(im_size=args.im_size, n_objects=args.n_digits, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.train_examples, mask_path=args.mask_path)
-valid_data_set = Loader(im_size=args.im_size, n_objects=args.n_digits, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.val_examples, mask_path=args.mask_path)
+train_data_set = Loader(im_size=args.im_size, n_objects=args.n_digits, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.train_examples, mask_path=args.mask_path, baseline_mode=True)
+valid_data_set = Loader(im_size=args.im_size, n_objects=args.n_digits, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.val_examples, mask_path=args.mask_path, baseline_mode=True)
 
 train_loader = DataLoader(train_data_set, batch_size=args.batch_size, shuffle=True, num_workers=args.n_workers)
 valid_loader = DataLoader(valid_data_set, batch_size=args.valid_batch_size, shuffle=False, num_workers=args.n_workers)

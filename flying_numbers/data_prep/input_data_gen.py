@@ -53,6 +53,28 @@ def get_streaking_image(x, mask=None, intensity_variation=True):
 
 	return y1
 
+def get_video_from_streaking_image(x, n_frames, mask):
+
+	x = np.transpose(x, (1, 2, 0))
+
+	D_x, D_y = mask.shape
+	D_t = n_frames
+
+	Cu=np.zeros([D_x, D_y+D_t-1, D_t])
+
+	for i in range(D_t):
+		if i>=3:
+			Cu[:,i:i+D_y,i]=mask
+	y_Dt = np.tile(x, [1, 1, D_t])
+	video = Cu*y_Dt
+	video_shift = np.zeros_like(video)
+	for i in range(D_t):
+	    video_shift[:,:,i] = np.roll(video[:,:,i],[0,-i]);
+
+	input_video = video_shift[:, :D_y, :]
+
+	return torch.from_numpy(np.expand_dims(input_video, axis=0))
+
 if __name__ == "__main__":
 
 	# Data settings

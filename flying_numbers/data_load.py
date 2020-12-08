@@ -9,7 +9,7 @@ import torchvision.transforms as transforms
 
 class Loader(Dataset):
 
-	def __init__(self, im_size, n_objects, n_frames, rep_times, sample_size, mask_path=None):
+	def __init__(self, im_size, n_objects, n_frames, rep_times, sample_size, mask_path=None, baseline_mode=False):
 		super(Loader, self).__init__()
 		self.im_size = im_size
 		self.n_objects = n_objects
@@ -19,6 +19,7 @@ class Loader(Dataset):
 		self.digit_size_ = 21
 		self.step_length_ = 0.1
 		self.mnist = torchvision.datasets.MNIST('./', train=True, transform=transforms.Compose([transforms.CenterCrop(21), transforms.ToTensor()]), target_transform=None, download=True)
+		self.baseline_mode = baseline_mode
 
 		if mask_path:
 			self.mask = np.load(mask_path)
@@ -28,6 +29,11 @@ class Loader(Dataset):
 	def __getitem__(self, index):
 
 		inp, out = self.gen_example()
+		if self.baseline_mode:
+			if self.mask is None:
+				inp = get_video_from_streaking_image(inp, self.n_frames, np.ones(self.im_size, self.im_size))
+			else:
+				inp = get_video_from_streaking_image(inp, self.n_frames, self.mask)
 
 		return inp, out
 
@@ -188,7 +194,7 @@ class Loader_gen(Dataset):
 
 if __name__=='__main__':
 
-	test_dataset = Loader(im_size=64, n_objects=2, n_frames=40, rep_times=1, sample_size=100)
+	test_dataset = Loader(im_size=64, n_objects=2, n_frames=40, rep_times=1, sample_size=100, mask_path='./mask.npy', baseline_mode=True)
 
 	print(test_dataset.mask)
 
@@ -198,13 +204,19 @@ if __name__=='__main__':
 
 	out_ = out_.squeeze(0).numpy()
 
-	print(inp_.shape, out_.shape)
-
 	import matplotlib.pyplot as plt
 
 	im = plt.imshow(out_[...,-1])
 	for i in range(out_.shape[-1]):
 		im.set_data(out_[...,i])
+		plt.pause(0.02)
+	plt.show()
+
+	inp_ = inp_.squeeze(0).numpy()
+
+	im = plt.imshow(inp_[...,-1])
+	for i in range(inp_.shape[-1]):
+		im.set_data(inp_[...,i])
 		plt.pause(0.02)
 	plt.show()
 

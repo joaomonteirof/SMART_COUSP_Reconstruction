@@ -78,11 +78,11 @@ if __name__ == '__main__':
 	parser.add_argument('--n-digits', type=int, default=2, metavar='N', help='Number of bouncing digits (default: 2)')
 	parser.add_argument('--n-frames', type=int, default=40, metavar='N', help='Number of frames per sample (default: 40)')
 	parser.add_argument('--rep-times', type=int, default=1, metavar='N', help='Number of times consecutive frames are repeated. No rep is equal to 1 (default: 1)')
-	parser.add_argument('--mask-path', type=str, default=None, metavar='Path', help='path to encoding mask')
+	parser.add_argument('--mask-path', type=str, default='./mask.npy', metavar='Path', help='path to encoding mask')
 	args = parser.parse_args()
 	args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
-	data_set = Loader(im_size=args.im_size, n_objects=args.n_digits, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.n_tests, mask_path=args.mask_path)
+	data_set = Loader(im_size=args.im_size, n_objects=args.n_digits, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.n_tests, mask_path=args.mask_path, baseline_mode=True)
 
 	torch.manual_seed(args.seed)
 	if args.cuda:
