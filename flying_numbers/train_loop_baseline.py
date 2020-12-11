@@ -116,7 +116,7 @@ class TrainLoop(object):
 
 		mse = torch.nn.functional.mse_loss(out, y)
 
-		msssim = 0
+		mssim = 0
 
 		for i in range(out.size(-1)):
 			gen_frame = out[...,i]
@@ -150,7 +150,7 @@ class TrainLoop(object):
 			out = self.model.forward(x)
 
 			mse = 0
-			msssim = 0
+			mssim = 0
 			frames_list = []
 
 			for i in range(out.size(-1)):
