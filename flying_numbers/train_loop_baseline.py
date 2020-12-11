@@ -53,7 +53,7 @@ class TrainLoop(object):
 			# Train step
 
 			for t,batch in train_iter:
-				new_train_loss, newm_mse, new_mssim = self.train_step(batch)
+				new_train_loss, new_mse, new_mssim = self.train_step(batch)
 				train_loss += new_train_loss
 				if self.logger:
 					self.logger.add_scalar('Train/Train Loss', new_train_loss, self.total_iters)
