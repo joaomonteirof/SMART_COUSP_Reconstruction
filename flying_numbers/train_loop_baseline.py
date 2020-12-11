@@ -1,6 +1,7 @@
 import torch
 import torchvision
 import torch.nn.init as init
+from pytorch_msssim import ms_ssim
 
 import numpy as np
 import pickle
@@ -27,7 +28,7 @@ class TrainLoop(object):
 		self.train_loader = train_loader
 		self.valid_loader = valid_loader
 		self.max_gnorm = max_gnorm
-		self.history = {'train_loss': [], 'valid_loss': []}
+		self.history = {'train_loss': [], 'valid_mse': [], 'valid_mssim': []}
 		self.total_iters = 0
 		self.cur_epoch = 0
 		self.its_without_improv = 0
@@ -62,20 +63,25 @@ class TrainLoop(object):
 			# Validation
 
 			for t, batch in enumerate(self.valid_loader):
-				new_valid_loss, approximate_scenes, frames_list, target_scenes = self.valid(batch)
-				valid_loss += new_valid_loss
+				new_valid_mse, new_valid_mssim, approximate_scenes, frames_list, target_scenes = self.valid(batch)
+				valid_mse += new_valid_mse
+				valid_mssim += new_valid_mssim
 
-			self.history['valid_loss'].append(valid_loss/(t+1))
+			self.history['valid_mse'].append(valid_mse/(t+1))
+			self.history['valid_mssim'].append(valid_mssim/(t+1))
 
 			if self.logger:
 				self.logger.add_scalar('Valid/MSE', self.history['valid_loss'][-1], self.total_iters)
 				self.logger.add_scalar('Valid/Best_MSE', np.min(self.history['valid_loss']), self.total_iters)
+				self.logger.add_scalar('Valid/MS-SSIM', self.history['valid_mssim'][-1], self.total_iters)
+				self.logger.add_scalar('Valid/Best_MS-SSIM', np.max(self.history['valid_mssim']), self.total_iters)
 				self.logger.add_video('Reconstructed', torch.cat(frames_list, 1), self.total_iters)
 				self.logger.add_video('Approximate_scenes', approximate_scenes.permute(0,4,1,2,3), self.total_iters)				
 				self.logger.add_video('Target_scenes', target_scenes.permute(0,4,1,2,3), self.total_iters)
 
 			print('Total train loss: {}'.format(self.history['train_loss'][-1]))
-			print('Total valid loss: {}'.format(self.history['valid_loss'][-1]))
+			print('Valid MSE: {}'.format(self.history['valid_mse'][-1]))
+			print('Valid MS-SSIM: {}'.format(self.history['valid_mssim'][-1]))
 
 			self.cur_epoch += 1
 
@@ -105,7 +111,7 @@ class TrainLoop(object):
 
 		out = self.model.forward(x)
 
-		loss = torch.nn.functional.mse_loss(out, y)
+		loss = torch.nn.functional.mse_loss(out, y) + 0.1*(1.0-ms_ssim(out, y, data_range=1, size_average=True))
 
 		loss.backward()
 		grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_gnorm)
@@ -131,15 +137,17 @@ class TrainLoop(object):
 
 			out = self.model.forward(x)
 
-			loss = 0
+			mse = 0
+			msssim = 0
 			frames_list = []
 
 			for i in range(out.size(-1)):
 				gen_frame = out[...,i]
-				loss += torch.nn.functional.mse_loss(gen_frame, y[...,i])
+				mse += torch.nn.functional.mse_loss(gen_frame, y[...,i])
+				mssim += ms_ssim(gen_frame, y[...,i], data_range=1, size_average=True)
 				frames_list.append(gen_frame.unsqueeze(1))
 
-		return loss.item(), x, frames_list, y
+		return mse.item(), mssim.item(), x, frames_list, y
 
 	def checkpointing(self):
 
