@@ -1,7 +1,7 @@
 import torch
 import torchvision
 import torch.nn.init as init
-from pytorch_msssim import ms_ssim
+from pytorch_msssim import MS_SSIM
 
 import numpy as np
 import pickle
@@ -34,6 +34,7 @@ class TrainLoop(object):
 		self.its_without_improv = 0
 		self.last_best_val_loss = np.inf
 		self.logger = logger
+		self.ms_ssim = MS_SSIM(win_size=11, win_sigma=1.5, data_range=1, size_average=True, channel=1)
 
 		if checkpoint_epoch is not None:
 			self.load_checkpoint(self.save_epoch_fmt.format(checkpoint_epoch))
@@ -111,7 +112,7 @@ class TrainLoop(object):
 
 		out = self.model.forward(x)
 
-		loss = torch.nn.functional.mse_loss(out, y) + 0.1*(1.0-ms_ssim(out, y, data_range=1, size_average=True))
+		loss = torch.nn.functional.mse_loss(out, y) + 0.1*(1.0-self.ms_ssim(out, y))
 
 		loss.backward()
 		grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_gnorm)
@@ -144,7 +145,7 @@ class TrainLoop(object):
 			for i in range(out.size(-1)):
 				gen_frame = out[...,i]
 				mse += torch.nn.functional.mse_loss(gen_frame, y[...,i])
-				mssim += ms_ssim(gen_frame, y[...,i], data_range=1, size_average=True)
+				mssim += self.ms_ssim(gen_frame, y[...,i])
 				frames_list.append(gen_frame.unsqueeze(1))
 
 		return mse.item(), mssim.item(), x, frames_list, y
