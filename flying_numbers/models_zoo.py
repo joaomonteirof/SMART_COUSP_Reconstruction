@@ -110,5 +110,5 @@ class model_baseline(nn.Module):
 		x_dec_3 = self.res_dec_3(x_dec_2+x_enc_3)
 		x_dec_4 = self.res_dec_4(x_dec_3+x_enc_2)
 		x_dec_5 = self.res_dec_5(x_dec_4+x_enc_1)
-		x_out = torch.tanh(self.output_conv(x_dec_5))+x
+		x_out = torch.sigmoid(self.output_conv(x_dec_5))
 		return x_out.transpose(1,-1).unsqueeze(1)

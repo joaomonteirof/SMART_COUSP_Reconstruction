@@ -1,7 +1,8 @@
 import torch
+import torch.nn.functional as F
 import torchvision
 import torch.nn.init as init
-from pytorch_msssim import MS_SSIM
+from pytorch_msssim import ms_ssim
 
 import numpy as np
 import pickle
@@ -34,7 +35,6 @@ class TrainLoop(object):
 		self.its_without_improv = 0
 		self.last_best_val_loss = np.inf
 		self.logger = logger
-		self.ms_ssim = MS_SSIM(win_size=11, win_sigma=1.5, data_range=1, size_average=True, channel=1)
 
 		if checkpoint_epoch is not None:
 			self.load_checkpoint(self.save_epoch_fmt.format(checkpoint_epoch))
@@ -53,10 +53,12 @@ class TrainLoop(object):
 			# Train step
 
 			for t,batch in train_iter:
-				new_train_loss = self.train_step(batch)
+				new_train_loss, newm_mse, new_mssim = self.train_step(batch)
 				train_loss += new_train_loss
 				if self.logger:
 					self.logger.add_scalar('Train/Train Loss', new_train_loss, self.total_iters)
+					self.logger.add_scalar('Train/Train MSE', new_mse, self.total_iters)
+					self.logger.add_scalar('Train/Train MS-SSIM', new_mssim, self.total_iters)
 				self.total_iters += 1
 
 			self.history['train_loss'].append(train_loss/(t+1))
@@ -112,7 +114,16 @@ class TrainLoop(object):
 
 		out = self.model.forward(x)
 
-		loss = torch.nn.functional.mse_loss(out, y) + 0.1*(1.0-self.ms_ssim(out, y))
+		mse = torch.nn.functional.mse_loss(out, y)
+
+		msssim = 0
+
+		for i in range(out.size(-1)):
+			gen_frame = out[...,i]
+			mssim += ms_ssim(F.upsample(gen_frame, scale_factor=3), F.upsample(y[...,i], scale_factor=3))
+
+		mssim = 1.0-mssim/(i+1)
+		loss = mse + 0.7*mssim
 
 		loss.backward()
 		grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_gnorm)
@@ -122,7 +133,7 @@ class TrainLoop(object):
 			self.logger.add_scalar('Info/Grad_norm', grad_norm, self.total_iters)
 			self.logger.add_scalar('Info/LR', self.optimizer.param_groups[0]['lr'], self.total_iters)
 
-		return loss.item()
+		return loss.item(), mse.item(), mssim.item()
 
 	def valid(self, batch):
 
@@ -145,10 +156,10 @@ class TrainLoop(object):
 			for i in range(out.size(-1)):
 				gen_frame = out[...,i]
 				mse += torch.nn.functional.mse_loss(gen_frame, y[...,i])
-				mssim += self.ms_ssim(gen_frame, y[...,i])
+				mssim += ms_ssim(F.upsample(gen_frame, scale_factor=3), F.upsample(y[...,i], scale_factor=3))
 				frames_list.append(gen_frame.unsqueeze(1))
 
-		return mse.item(), mssim.item(), x, frames_list, y
+		return mse.item(), (mssim/(i+1)).item(), x, frames_list, y
 
 	def checkpointing(self):
 

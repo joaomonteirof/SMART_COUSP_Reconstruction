@@ -1,7 +1,9 @@
 from __future__ import print_function
 import argparse
 import torch
+import torch.nn.functional as F
 import models_zoo
+from pytorch_msssim import ms_ssim
 
 # Training settings
 parser = argparse.ArgumentParser(description='test models')
@@ -26,3 +28,4 @@ print(out_rec.size())
 for i in range(out_rec.size(-1)):
 	gen_frame = out_rec[...,i]
 	print(i, gen_frame.unsqueeze(1).size())
+	print(ms_ssim(F.upsample(gen_frame, scale_factor=3), F.upsample(out_rec[...,i], scale_factor=3)))
