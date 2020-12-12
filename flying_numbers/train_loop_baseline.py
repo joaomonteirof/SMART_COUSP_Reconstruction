@@ -172,7 +172,7 @@ class TrainLoop(object):
 		'total_iters': self.total_iters,
 		'cur_epoch': self.cur_epoch,
 		'its_without_improve': self.its_without_improv,
-		'last_best_val_loss': self.last_best_val_loss}
+		'last_best_val_mse': self.last_best_val_mse}
 		torch.save(ckpt, self.save_epoch_fmt.format(self.cur_epoch))
 
 	def load_checkpoint(self, ckpt):
@@ -189,7 +189,7 @@ class TrainLoop(object):
 			self.total_iters = ckpt['total_iters']
 			self.cur_epoch = ckpt['cur_epoch']
 			self.its_without_improv = ckpt['its_without_improve']
-			self.last_best_val_loss = ckpt['last_best_val_loss']
+			self.last_best_val_mse = ckpt['last_best_val_mse']
 
 		else:
 			print('No checkpoint found at: {}'.format(ckpt))
