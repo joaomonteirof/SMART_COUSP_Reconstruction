@@ -33,7 +33,7 @@ class TrainLoop(object):
 		self.total_iters = 0
 		self.cur_epoch = 0
 		self.its_without_improv = 0
-		self.last_best_val_loss = np.inf
+		self.last_best_val_mse = np.inf
 		self.logger = logger
 
 		if checkpoint_epoch is not None:
@@ -89,9 +89,9 @@ class TrainLoop(object):
 
 			self.cur_epoch += 1
 
-			if valid_loss < self.last_best_val_loss:
+			if self.history['valid_mse'][-1] < self.last_best_val_mse:
 				self.its_without_improv = 0
-				self.last_best_val_loss = valid_loss
+				self.last_best_val_mse = self.history['valid_mse'][-1]
 				self.checkpointing()
 			else:
 				self.its_without_improv += 1
