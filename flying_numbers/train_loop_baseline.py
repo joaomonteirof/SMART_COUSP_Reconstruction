@@ -75,8 +75,8 @@ class TrainLoop(object):
 			self.history['valid_mssim'].append(valid_mssim/(t+1))
 
 			if self.logger:
-				self.logger.add_scalar('Valid/MSE', self.history['valid_loss'][-1], self.total_iters)
-				self.logger.add_scalar('Valid/Best_MSE', np.min(self.history['valid_loss']), self.total_iters)
+				self.logger.add_scalar('Valid/MSE', self.history['valid_mse'][-1], self.total_iters)
+				self.logger.add_scalar('Valid/Best_MSE', np.min(self.history['valid_mse']), self.total_iters)
 				self.logger.add_scalar('Valid/MS-SSIM', self.history['valid_mssim'][-1], self.total_iters)
 				self.logger.add_scalar('Valid/Best_MS-SSIM', np.max(self.history['valid_mssim']), self.total_iters)
 				self.logger.add_video('Reconstructed', torch.cat(frames_list, 1), self.total_iters)
