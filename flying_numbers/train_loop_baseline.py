@@ -57,14 +57,14 @@ class TrainLoop(object):
 			# Train step
 
 			for t,batch in train_iter:
-				new_train_loss, new_mse, new_mssim = self.train_step(batch)
+				new_train_loss, new_train_mse, new_train_mssim = self.train_step(batch)
 				train_loss += new_train_loss
 				train_mse += new_train_mse
 				train_mssim += new_train_mssim
 				if self.logger:
 					self.logger.add_scalar('Train/Train Loss', new_train_loss, self.total_iters)
-					self.logger.add_scalar('Train/Train MSE', new_mse, self.total_iters)
-					self.logger.add_scalar('Train/Train MS-SSIM', new_mssim, self.total_iters)
+					self.logger.add_scalar('Train/Train MSE', new_train_mse, self.total_iters)
+					self.logger.add_scalar('Train/Train MS-SSIM', new_train_mssim, self.total_iters)
 				self.total_iters += 1
 
 			self.history['train_loss'].append(train_loss/(t+1))
