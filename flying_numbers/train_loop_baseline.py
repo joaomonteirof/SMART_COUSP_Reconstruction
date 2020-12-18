@@ -49,6 +49,8 @@ class TrainLoop(object):
 			train_iter = tqdm(enumerate(self.train_loader), total=len(self.train_loader))
 
 			train_loss = 0.0
+			train_mse = 0.0
+			train_mssim = 0.0
 			valid_mse = 0.0
 			valid_mssim = 0.0
 
