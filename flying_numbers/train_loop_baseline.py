@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 class TrainLoop(object):
 
-	def __init__(self, model, optimizer, train_loader, valid_loader, max_gnorm=10.0, checkpoint_path=None, checkpoint_epoch=None, cuda=True, logger=None):
+	def __init__(self, model, optimizer, train_loader, valid_loader, max_gnorm=10.0, patience=10, lr_factor=0.1, checkpoint_path=None, checkpoint_epoch=None, cuda=True, logger=None):
 		if checkpoint_path is None:
 			# Save to current directory
 			self.checkpoint_path = os.getcwd()
@@ -26,6 +26,7 @@ class TrainLoop(object):
 		self.cuda_mode = cuda
 		self.model = model
 		self.optimizer = optimizer
+		self.lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, factor=lr_factor, patience=patience, min_lr=1e-8)
 		self.train_loader = train_loader
 		self.valid_loader = valid_loader
 		self.max_gnorm = max_gnorm
@@ -79,6 +80,7 @@ class TrainLoop(object):
 			self.history['valid_mssim'].append(valid_mssim/(t+1))
 
 			if self.logger:
+				self.logger.add_scalar('Info/Epoch', self.cur_epoch, self.total_iters)
 				self.logger.add_scalar('Valid/MSE', self.history['valid_mse'][-1], self.total_iters)
 				self.logger.add_scalar('Valid/Best_MSE', np.min(self.history['valid_mse']), self.total_iters)
 				self.logger.add_scalar('Valid/MS-SSIM', self.history['valid_mssim'][-1], self.total_iters)
@@ -92,6 +94,7 @@ class TrainLoop(object):
 			print('Valid MS-SSIM: {}'.format(self.history['valid_mssim'][-1]))
 
 			self.cur_epoch += 1
+			self.lr_scheduler.step(self.history['valid_mse'][-1])
 
 			if self.history['valid_mse'][-1] < self.last_best_val_mse:
 				self.its_without_improv = 0
@@ -172,6 +175,7 @@ class TrainLoop(object):
 		print('Checkpointing...')
 		ckpt = {'model_state': self.model.state_dict(),
 		'optimizer_state': self.optimizer.state_dict(),
+		'scheduler_state': self.lr_scheduler.state_dict(),
 		'history': self.history,
 		'total_iters': self.total_iters,
 		'cur_epoch': self.cur_epoch,
@@ -188,6 +192,8 @@ class TrainLoop(object):
 			self.model.load_state_dict(ckpt['model_state'])
 			# Load optimizer state
 			self.optimizer.load_state_dict(ckpt['optimizer_state'])
+			# Load Scheduler state
+			self.lr_scheduler.load_state_dict(ckpt['scheduler_state'])
 			# Load history
 			self.history = ckpt['history']
 			self.total_iters = ckpt['total_iters']

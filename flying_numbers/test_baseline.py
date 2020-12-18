@@ -23,20 +23,17 @@ def test_model(model, data_loader, n_tests, cuda_mode, enhancement):
 			sample_in, sample_out = data_loader[i]
 			sample_out = sample_out.transpose(0,-1).squeeze(-1)
 
-			sample_in = sample_in.unsqueeze(0)
-			to_pil(sample_in[0]).save(str(i+1)+'_streaking.png')
-
 			if cuda_mode:
 				sample_in = sample_in.cuda()
 
 			out = model.forward(sample_in)
-
+			out = torch.sigmoid(out)
 			frames_list = []
 
-			for j in range(out.size(1)):
+			for j in range(out.size(-1)):
 
 				gen_frame = out[...,j].contiguous()
-				frames_list.append(gen_frame.cpu().squeeze(0).detach())
+				frames_list.append(gen_frame[0])
 
 			sample_rec = torch.cat(frames_list, 0)
 
@@ -81,6 +78,8 @@ if __name__ == '__main__':
 	parser.add_argument('--mask-path', type=str, default='./mask.npy', metavar='Path', help='path to encoding mask')
 	args = parser.parse_args()
 	args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
+
+	print(args)
 
 	data_set = Loader(im_size=args.im_size, n_objects=args.n_digits, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.n_tests, mask_path=args.mask_path, baseline_mode=True)
 

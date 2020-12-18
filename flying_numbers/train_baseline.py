@@ -17,6 +17,8 @@ parser.add_argument('--lr', type=float, default=0.0003, metavar='LR', help='lear
 parser.add_argument('--beta1', type=float, default=0.5, metavar='beta1', help='Adam beta 1 (default: 0.5)')
 parser.add_argument('--beta2', type=float, default=0.999, metavar='beta2', help='Adam beta 2 (default: 0.99)')
 parser.add_argument('--max-gnorm', type=float, default=10., metavar='clip', help='Max gradient norm (default: 10.0)')
+parser.add_argument('--patience', type=int, default=10, metavar='N', help='how many epochs with no improvements to wait before reducing lr.')
+parser.add_argument('--lr-factor', type=float, default=0.5., metavar='lrfac', help='Factor to reduce lr after patience epochs without improvement.')
 parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
 parser.add_argument('--checkpoint-epoch', type=int, default=None, metavar='N', help='epoch to load for checkpointing. If None, training starts from scratch')
 parser.add_argument('--checkpoint-path', type=str, default=None, metavar='Path', help='Path for checkpointing')
@@ -68,7 +70,9 @@ if args.logdir:
 else:
 	writer = None
 
-trainer = TrainLoop(model, optimizer, train_loader, valid_loader, max_gnorm=args.max_gnorm, checkpoint_path=args.checkpoint_path, checkpoint_epoch=args.checkpoint_epoch, cuda=args.cuda, logger=writer)
+trainer = TrainLoop(model, optimizer, train_loader, valid_loader, max_gnorm=args.max_gnorm, patience=args.patience,
+	lr_factor=args.lr_factor, checkpoint_path=args.checkpoint_path, checkpoint_epoch=args.checkpoint_epoch,
+	cuda=args.cuda, logger=writer)
 
 args_dict = dict(vars(args))
 for key in args_dict:
