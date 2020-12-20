@@ -30,7 +30,7 @@ class TrainLoop(object):
 		self.train_loader = train_loader
 		self.valid_loader = valid_loader
 		self.max_gnorm = max_gnorm
-		self.history = {'train_loss': [], 'valid_mse': [], 'valid_mssim': []}
+		self.history = {'train_loss': [], 'train_mse':[], 'train_msssim':[], 'valid_mse': [], 'valid_mssim': []}
 		self.total_iters = 0
 		self.cur_epoch = 0
 		self.its_without_improv = 0
