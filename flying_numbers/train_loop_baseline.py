@@ -124,16 +124,17 @@ class TrainLoop(object):
 
 		out = self.model.forward(x)
 
-		mse = torch.nn.functional.mse_loss(out, y)
-
-		mssim = 0
+		mse = 0.0
+		mssim = 0.0
 
 		for i in range(out.size(-1)):
 			gen_frame = out[...,i]
+			mse += torch.nn.functional.mse_loss(gen_frame, y[...,i])
 			mssim += ms_ssim(F.upsample(gen_frame, scale_factor=3), F.upsample(y[...,i], scale_factor=3))
 
+		mse = mse/(i+1)
 		mssim = 1.0-mssim/(i+1)
-		loss = mse + 0.7*mssim
+		loss = mse + 0.3*mssim
 
 		loss.backward()
 		grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_gnorm)
