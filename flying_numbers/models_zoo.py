@@ -58,7 +58,7 @@ class ResidualBlock(nn.Module):
 		super(ResidualBlock, self).__init__()
 		self.conv1 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False)
 		self.bn1 = nn.BatchNorm2d(64)
-		self.conv2 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False)
+		self.conv2 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=True)
 
 	def forward(self, x):
 		out = F.relu(self.bn1(self.conv1(x)))
