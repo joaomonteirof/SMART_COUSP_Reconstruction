@@ -65,13 +65,22 @@ def get_video_from_streaking_image(x, n_frames, mask):
 	for i in range(D_t):
 		if i>=3:
 			Cu[:,i:i+D_y,i]=mask
-	y_Dt = np.tile(x, [1, 1, D_t])
-	video = Cu*y_Dt
-	video_shift = np.zeros_like(video)
-	for i in range(D_t):
-	    video_shift[:,:,i] = np.roll(video[:,:,i],[0,-i]);
 
-	input_video = video_shift[:, :D_y, :]
+	Phi_PhiT_diag = (Cu**2).sum(-1).ravel()+1e-6
+	#Phi_PhiT = np.diagflat( Phi_PhiT_diag )
+
+	#PhiPhiT_inv = np.linalg.pinv(Phi_PhiT)
+	PhiPhiT_inv = np.diagflat( Phi_PhiT_diag**-1 )
+
+	kernel_pseudo_inverse = np.diagonal(PhiPhiT_inv).reshape(Cu.shape[:-1])
+	PhiT_PhiPhiTInv = Cu*np.expand_dims(kernel_pseudo_inverse, -1)
+	x_hat = PhiT_PhiPhiTInv*x.numpy()
+
+	video_shift = np.zeros_like(x_hat)
+	for i in range(D_t):
+	    video_shift[:,:,i] = np.roll(x_hat[:,:,i],[0,-i]);
+
+	input_video = normalize(video_shift[:, :D_y, :])
 
 	return torch.from_numpy(np.expand_dims(input_video, axis=0)).float()
 
