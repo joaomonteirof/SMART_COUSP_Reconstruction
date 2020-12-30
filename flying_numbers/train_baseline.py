@@ -16,6 +16,7 @@ parser.add_argument('--epochs', type=int, default=200, metavar='N', help='number
 parser.add_argument('--lr', type=float, default=0.0003, metavar='LR', help='learning rate (default: 0.0002)')
 parser.add_argument('--beta1', type=float, default=0.5, metavar='beta1', help='Adam beta 1 (default: 0.5)')
 parser.add_argument('--beta2', type=float, default=0.999, metavar='beta2', help='Adam beta 2 (default: 0.99)')
+parser.add_argument('--l2', type=float, default=1e-5, metavar='L2', help='Weight decay coefficient (default: 0.00001)')
 parser.add_argument('--max-gnorm', type=float, default=10., metavar='clip', help='Max gradient norm (default: 10.0)')
 parser.add_argument('--patience', type=int, default=10, metavar='N', help='how many epochs with no improvements to wait before reducing lr.')
 parser.add_argument('--lr-factor', type=float, default=0.5, metavar='lrfac', help='Factor to reduce lr after patience epochs without improvement.')
@@ -63,7 +64,7 @@ if args.cuda:
 print(model)
 print('\n')
 
-optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
+optimizer = optim.Adam(model.parameters(), lr=args.lr, betas=(args.beta1, args.beta2), weight_decay=args.l2)
 
 if args.logdir:
 	writer = SummaryWriter(log_dir=args.logdir, comment='reconstruction', purge_step=0 if args.checkpoint_epoch is None else int(args.checkpoint_epoch*len(train_loader)))
