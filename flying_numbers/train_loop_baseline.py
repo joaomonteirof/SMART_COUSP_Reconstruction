@@ -130,7 +130,7 @@ class TrainLoop(object):
 		for i in range(out.size(-1)):
 			gen_frame = out[...,i]
 			mse += torch.nn.functional.mse_loss(gen_frame, y[...,i])
-			mssim += ms_ssim(F.upsample(gen_frame, scale_factor=3), F.upsample(y[...,i], scale_factor=3))
+			mssim += ms_ssim(F.interpolate(gen_frame, scale_factor=3), F.interpolate(y[...,i], scale_factor=3))
 
 		mse = mse/(i+1)
 		mssim = 1.0-mssim/(i+1)
@@ -167,7 +167,7 @@ class TrainLoop(object):
 			for i in range(out.size(-1)):
 				gen_frame = out[...,i]
 				mse += torch.nn.functional.mse_loss(gen_frame, y[...,i])
-				mssim += ms_ssim(F.upsample(gen_frame, scale_factor=3), F.upsample(y[...,i], scale_factor=3))
+				mssim += ms_ssim(F.interpolate(gen_frame, scale_factor=3), F.interpolate(y[...,i], scale_factor=3))
 				frames_list.append(gen_frame.unsqueeze(1))
 
 		return mse.item(), (mssim/(i+1)).item(), x, frames_list, y
