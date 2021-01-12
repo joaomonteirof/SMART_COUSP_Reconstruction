@@ -124,6 +124,7 @@ class TrainLoop(object):
 
 		out = self.model.forward(x)
 
+		"""
 		mse = 0.0
 		mssim = 0.0
 
@@ -135,7 +136,9 @@ class TrainLoop(object):
 		mse = mse/(i+1)
 		mssim = 1.0-mssim/(i+1)
 		loss = mse + 0.3*mssim
+		"""
 
+		loss = torch.nn.functional.mse_loss(out, y)
 		loss.backward()
 		grad_norm = torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.max_gnorm)
 		self.optimizer.step()
@@ -144,7 +147,7 @@ class TrainLoop(object):
 			self.logger.add_scalar('Info/Grad_norm', grad_norm, self.total_iters)
 			self.logger.add_scalar('Info/LR', self.optimizer.param_groups[0]['lr'], self.total_iters)
 
-		return loss.item(), mse.item(), mssim.item()
+		return loss.item(), 0.0, 0.0  ## mse.item(), mssim.item()
 
 	def valid(self, batch):
 
