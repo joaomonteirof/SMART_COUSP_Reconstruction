@@ -1,3 +1,3 @@
 ## CUP Reconstruction
 
-![Training procedure](./figs/training_procedure.tiff)
+![Training procedure](./figs/training_procedure.png)
