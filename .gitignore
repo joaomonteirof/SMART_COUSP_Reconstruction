@@ -6,6 +6,5 @@
 *.jpeg
 *.jpg
 *.JPEG
-*.png
 *.sh
 .DS_Store
