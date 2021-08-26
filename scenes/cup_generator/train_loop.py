@@ -50,7 +50,7 @@ class TrainLoop(object):
 		if checkpoint_epoch is not None:
 			self.load_checkpoint(checkpoint_epoch)
 		else:
-			self.fixed_noise = torch.randn(1000, 100).view(-1, 100, 1, 1)
+			self.fixed_noise = torch.randn(1000, 128)[:, :, None, None]
 
 	def train(self, n_epochs=1, save_every=1):
 
@@ -88,7 +88,7 @@ class TrainLoop(object):
 		## Train each D
 
 		x = batch
-		z_ = torch.randn(x.size(0), 100).view(-1, 100, 1, 1)
+		z_ = torch.randn(x.size(0), 128)[:, :, None, None]
 		y_real_ = torch.ones(x.size(0))
 		y_fake_ = torch.zeros(x.size(0))
 
