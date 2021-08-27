@@ -9,7 +9,7 @@ class model_gen(nn.Module):
 
 		self.cuda_mode = cuda_mode
 
-		## Assuming (64, 143) inputs
+		## Assuming (256, 275) inputs
 
 		self.features = nn.Sequential(
 			nn.Conv2d(1, 512, kernel_size=(5,5), padding=(2,1), stride=(2,2), bias=False),
@@ -18,16 +18,19 @@ class model_gen(nn.Module):
 			nn.Conv2d(512, 256, kernel_size=(5,5), padding=(2,1), stride=(2,2), bias=False),
 			nn.BatchNorm2d(256),
 			nn.ReLU(),
-			nn.Conv2d(256, 128, kernel_size=(5,5), padding=(2,1), stride=(1,2), bias=False),
+			nn.Conv2d(256, 128, kernel_size=(5,5), padding=(2,1), stride=(2,2), bias=False),
 			nn.BatchNorm2d(128),
 			nn.ReLU(),
-			nn.Conv2d(128, n_frames, kernel_size=(5,5), padding=(2,1), stride=(1,1), bias=False),
+			nn.Conv2d(128, 128, kernel_size=(5,5), padding=(2,1), stride=(2,2), bias=False),
+			nn.BatchNorm2d(128),
+			nn.ReLU(),
+			nn.Conv2d(128, n_frames, kernel_size=(5,5), padding=(0, 0), stride=(1,1), bias=False),
 			nn.BatchNorm2d(n_frames),
 			nn.ReLU() )
 
-		self.lstm = nn.LSTM(160, 256, 2, bidirectional=True, batch_first=False)
+		self.lstm = nn.LSTM(144, 256, 2, bidirectional=True, batch_first=False)
 
-		self.fc = nn.Linear(256*2, 100)
+		self.fc = nn.Linear(256*2, 128)
 
 	def forward(self, x):
 
@@ -50,65 +53,3 @@ class model_gen(nn.Module):
 
 		return x.transpose(0,1)
 
-
-
-class ResidualBlock(nn.Module):
-
-	def __init__(self):
-		super(ResidualBlock, self).__init__()
-		self.conv1 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False)
-		self.bn1 = nn.BatchNorm2d(64)
-		self.conv2 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=True)
-
-	def forward(self, x):
-		out = F.relu(self.bn1(self.conv1(x)))
-		out = self.conv2(out)
-		out += x
-		out = F.relu(out)
-		return out
-
-class model_baseline(nn.Module):
-	def __init__(self, n_frames):
-		super(model_baseline, self).__init__()
-
-		self.input_conv = nn.Sequential(nn.Conv2d(n_frames, 64, kernel_size=3, stride=1, padding=1, bias=False),
-			nn.BatchNorm2d(64),
-			nn.ReLU())
-
-		self.intermediate_conv = nn.Sequential(nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False),
-			nn.BatchNorm2d(64),
-			nn.ReLU(),
-			nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False),
-			nn.BatchNorm2d(64),
-			nn.ReLU())
-
-		self.output_conv = nn.Conv2d(64, n_frames, kernel_size=1, stride=1, padding=0, bias=True)
-
-		self.res_enc_1 = ResidualBlock()
-		self.res_dec_1 = ResidualBlock()
-		self.res_enc_2 = ResidualBlock()
-		self.res_dec_2 = ResidualBlock()
-		self.res_enc_3 = ResidualBlock()
-		self.res_dec_3 = ResidualBlock()
-		self.res_enc_4 = ResidualBlock()
-		self.res_dec_4 = ResidualBlock()
-		self.res_enc_5 = ResidualBlock()
-		self.res_dec_5 = ResidualBlock()
-
-
-	def forward(self, x):
-		x = x.squeeze(1).transpose(1,-1)
-		x_in = self.input_conv(x)
-		x_enc_1 = self.res_enc_1(x_in)
-		x_enc_2 = self.res_enc_2(x_enc_1)
-		x_enc_3 = self.res_enc_3(x_enc_2)
-		x_enc_4 = self.res_enc_4(x_enc_3)
-		x_enc_5 = self.res_enc_5(x_enc_4)
-		x_dec_0 = self.intermediate_conv(x_enc_5) + x_enc_5
-		x_dec_1 = self.res_dec_1(x_dec_0)
-		x_dec_2 = self.res_dec_2(x_dec_1+x_enc_4)
-		x_dec_3 = self.res_dec_3(x_dec_2+x_enc_3)
-		x_dec_4 = self.res_dec_4(x_dec_3+x_enc_2)
-		x_dec_5 = self.res_dec_5(x_dec_4+x_enc_1)
-		x_out = self.output_conv(x_dec_5)
-		return x_out.transpose(1,-1).unsqueeze(1)

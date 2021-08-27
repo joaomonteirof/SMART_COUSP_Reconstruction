@@ -28,27 +28,26 @@ parser.add_argument('--save-every', type=int, default=5, metavar='N', help='how 
 parser.add_argument('--n-workers', type=int, default=2)
 parser.add_argument('--logdir', type=str, default=None, metavar='Path', help='Path for checkpointing')
 ### Data options
-parser.add_argument('--im-size', type=int, default=64, metavar='N', help='H and W of frames (default: 64)')
-parser.add_argument('--n-digits', type=int, default=2, metavar='N', help='Number of bouncing digits (default: 2)')
-parser.add_argument('--n-frames', type=int, default=40, metavar='N', help='Number of frames per sample (default: 40)')
-parser.add_argument('--rep-times', type=int, default=1, metavar='N', help='Number of times consecutive frames are repeated. No rep is equal to 1 (default: 1)')
+parser.add_argument('--im-size', type=int, default=256, metavar='N', help='H and W of frames (default: 256)')
+parser.add_argument('--n-frames', type=int, default=30, metavar='N', help='Number of frames per sample (default: 30)')
 parser.add_argument('--train-examples', type=int, default=50000, metavar='N', help='Number of training examples (default: 50000)')
 parser.add_argument('--val-examples', type=int, default=5000, metavar='N', help='Number of validation examples (default: 500)')
-parser.add_argument('--mask-path', type=str, default=None, metavar='Path', help='path to encoding mask')
+parser.add_argument('--mask-path', type=str, default="./mask.npy", metavar='Path', help='path to encoding mask')
+parser.add_argument('--data-path', type=str, default="./", metavar='Path', help='path to data')
 args = parser.parse_args()
 args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
-train_data_set = Loader(im_size=args.im_size, n_objects=args.n_digits, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.train_examples, mask_path=args.mask_path)
-valid_data_set = Loader(im_size=args.im_size, n_objects=args.n_digits, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.val_examples, mask_path=args.mask_path)
+train_data_set = Loader(args.im_size, args.n_frames, args.data_path, "train", sample_size=args.train_examples, mask_path=args.mask_path)
+valid_data_set = Loader(args.im_size, args.n_frames, args.data_path, "test", sample_size=args.val_examples, mask_path=args.mask_path)
 
-train_loader = DataLoader(train_data_set, batch_size=args.batch_size, shuffle=True, num_workers=args.n_workers)
-valid_loader = DataLoader(valid_data_set, batch_size=args.valid_batch_size, shuffle=False, num_workers=args.n_workers)
+train_loader = DataLoader(train_data_set, batch_size=args.batch_size, num_workers=args.n_workers)
+valid_loader = DataLoader(valid_data_set, batch_size=args.valid_batch_size, num_workers=args.n_workers)
 
 torch.manual_seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
-model = models_zoo.model_gen(n_frames=train_data_set.n_frames, cuda_mode=args.cuda)
+model = models_zoo.model_gen(n_frames=args..n_frames, cuda_mode=args.cuda)
 generator = Generator().eval()
 
 gen_state = torch.load(args.generator_path, map_location=lambda storage, loc: storage)

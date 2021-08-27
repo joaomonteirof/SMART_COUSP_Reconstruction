@@ -1,6 +1,6 @@
 import numpy as np
 
-mask = np.random.rand(64,64).round()
+mask = np.random.rand(256,256).round()
 
 print(mask)
 
