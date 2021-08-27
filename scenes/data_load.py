@@ -1,6 +1,5 @@
 import torch
 import glob
-import random
 import numpy as np
 from torch.utils.data import Dataset
 from data_prep.input_data_gen import *
@@ -20,6 +19,15 @@ def prep_video(data, im_size):
 	data = transforms.CenterCrop(im_size)(data)
 
 	return data
+
+def augument_image(im_tensor):
+
+	im_tensor = torchvision.transforms.RandomHorizontalFlip(p=0.5)(im_tensor)
+	im_tensor = torchvision.transforms.RandomRotation(10)(im_tensor)
+	im_tensor = torchvision.transforms.RandomVerticalFlip(p=0.2)(im_tensor)
+
+	return im_tensor
+
 
 class Loader(Dataset):
 
@@ -72,9 +80,11 @@ class Loader_gen(Dataset):
 		if index >= len(self):
 			raise IndexError
 
-		random_video_idx = random.randint(0, len(self.data)-1)
+		random_video_idx = torch.randint(0, len(self.data), (1,)).item()
 		video = self.data[random_video_idx]
-		random_frame_idx = random.randint(0, video.size(0)-1)
+		random_frame_idx = torch.randint(0, video.size(0), (1,)).item()
+
+		x = augument_image(video[random_frame_idx])
 
 		return video[random_frame_idx]
 
