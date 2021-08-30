@@ -73,7 +73,7 @@ class TrainLoop(object):
 				self.logger.add_scalar('Valid/Best_MSE', np.min(self.history['valid_loss']), self.total_iters)
 				grid_streaking = torchvision.utils.make_grid(input_streaking_images)
 				self.logger.add_image('Inputs', grid_streaking, self.total_iters)
-				z_ = torch.randn(8, 100).view(-1, 100, 1, 1).to(target_scenes.device)
+				z_ = torch.randn(8, 128).view(-1, 128, 1, 1).to(target_scenes.device)
 				grid_generator = torchvision.utils.make_grid(self.generator(z_))
 				self.logger.add_image('Random frames', grid_generator, self.total_iters)
 				self.logger.add_video('Reconstructed', torch.cat(frames_list, 1), self.total_iters)
