@@ -13,36 +13,37 @@ from PIL import Image, ImageEnhance
 
 import torchvision.transforms as transforms
 
-def test_model(model, generator, data_loader, n_tests, cuda_mode, enhancement):
+def test_model(model, generator, dataset, cuda_mode, enhancement):
 
 	model.eval()
 	to_pil = transforms.ToPILImage()
 
 	with torch.no_grad():
 
-		for i in range(n_tests):
-			sample_in, sample_out = data_loader[i]
-			sample_out = sample_out.transpose(0,-1).squeeze(-1)
+		sample_in, sample_out = dataset[0]
 
-			sample_in = sample_in.unsqueeze(0)
-			to_pil(sample_in[0]).save(str(i+1)+'_streaking.png')
+		if cuda_mode:
+			sample_in = sample_in.cuda()
 
-			if cuda_mode:
-				sample_in = sample_in.cuda()
+		out = model.forward(sample_in)
 
-			out = model.forward(sample_in)
+		rec_frames_list = []
+		out_frames_list = []
 
-			frames_list = []
 
+		for i in range(out.size(0)):
 			for j in range(out.size(1)):
 
-				gen_frame = generator(out[:,j,:].contiguous())
-				frames_list.append(gen_frame.cpu().squeeze(0).detach())
+				gen_frame = generator(out[i,j,:].unsqueeze(0))
+				rec_frames_list.append(gen_frame.cpu().squeeze(0).detach())
+				out_frames_list.append(sample_out[i,:,:,:,j])
 
-			sample_rec = torch.cat(frames_list, 0)
 
-			save_gif(sample_out, str(i+1)+'_real.gif', enhance=False)
-			save_gif(sample_rec, str(i+1)+'_rec.gif', enhance=enhancement)
+		sample_rec = torch.cat(rec_frames_list, 0)
+		sample_out = torch.cat(out_frames_list, 0)
+
+		save_gif(sample_out, 'real.gif', enhance=False)
+		save_gif(sample_rec, 'rec.gif', enhance=enhancement)
 
 def save_gif(data, file_name, enhance):
 
@@ -56,35 +57,27 @@ def save_gif(data, file_name, enhance):
 	frames[0].save(file_name, save_all=True, append_images=frames[1:])
 
 
-def plot_learningcurves(history, keys):
-
-	for i, key in enumerate(keys):
-		plt.figure(i+1)
-		plt.plot(history[key])
-		plt.title(key)
-	
-	plt.show()
-
 if __name__ == '__main__':
 
 	# Testing settings
 	parser = argparse.ArgumentParser(description='Generate reconstructed samples')
 	parser.add_argument('--cp-path', type=str, default=None, metavar='Path', help='Checkpoint/model path')
 	parser.add_argument('--generator-path', type=str, default=None, metavar='Path', help='Path for generator params')
-	parser.add_argument('--n-tests', type=int, default=4, metavar='N', help='number of samples to  (default: 64)')
 	parser.add_argument('--no-cuda', action='store_true', default=False, help='Disables GPU use')
 	parser.add_argument('--enhance', action='store_true', default=False, help='Enables enhancement')
 	parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
 	### Data options
-	parser.add_argument('--im-size', type=int, default=64, metavar='N', help='H and W of frames (default: 64)')
-	parser.add_argument('--n-digits', type=int, default=2, metavar='N', help='Number of bouncing digits (default: 2)')
-	parser.add_argument('--n-frames', type=int, default=40, metavar='N', help='Number of frames per sample (default: 40)')
-	parser.add_argument('--rep-times', type=int, default=1, metavar='N', help='Number of times consecutive frames are repeated. No rep is equal to 1 (default: 1)')
-	parser.add_argument('--mask-path', type=str, default=None, metavar='Path', help='path to encoding mask')
+	parser.add_argument('--im-size', type=int, default=256, metavar='N', help='H and W of frames (default: 256)')
+	parser.add_argument('--n-frames', type=int, default=30, metavar='N', help='Number of frames per sample (default: 30)')
+	parser.add_argument('--train-examples', type=int, default=50000, metavar='N', help='Number of training examples (default: 50000)')
+	parser.add_argument('--val-examples', type=int, default=5000, metavar='N', help='Number of validation examples (default: 500)')
+	parser.add_argument('--mask-path', type=str, default="./mask.npy", metavar='Path', help='path to encoding mask')
+	parser.add_argument('--data-path', type=str, default="./", metavar='Path', help='path to data')
 	args = parser.parse_args()
 	args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
 
-	data_set = Loader(im_size=args.im_size, n_objects=args.n_digits, n_frames=args.n_frames, rep_times=args.rep_times, sample_size=args.n_tests, mask_path=args.mask_path)
+
+	data_set = Loader(args.im_size, args.n_frames, args.data_path, "test_full", mask_path=args.mask_path)
 
 	torch.manual_seed(args.seed)
 	if args.cuda:
@@ -103,4 +96,4 @@ if __name__ == '__main__':
 		model = model.cuda()
 		generator = generator.cuda()
 
-	test_model(model=model, generator=generator, data_loader=data_set, n_tests=args.n_tests, cuda_mode=args.cuda, enhancement=args.enhance)
+	test_model(model=model, generator=generator, dataset=data_set, cuda_mode=args.cuda, enhancement=args.enhance)

@@ -124,6 +124,7 @@ class TrainLoop(object):
 		if self.logger:
 			self.logger.add_scalar('Info/Grad_norm', grad_norm, self.total_iters)
 			self.logger.add_scalar('Info/LR', self.optimizer.param_groups[0]['lr'], self.total_iters)
+			self.logger.add_scalar('Info/Epoch', self.cur_epoch, self.total_iters)
 
 		return loss.item()
 

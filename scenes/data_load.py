@@ -44,7 +44,7 @@ class Loader(Dataset):
 	def __init__(self, im_size, n_frames, data_path, mode, sample_size=1, mask_path=None):
 		super(Loader, self).__init__()
 
-		assert mode == "train" or mode == "test", "Mode should be set to train or test."
+		assert mode == "train" or mode == "test" or mode == "test_full", "Mode should be set to train or test."
 
 		self.mode = mode
 		self.im_size = im_size
@@ -82,24 +82,55 @@ class Loader(Dataset):
 			start_idx = split_idx
 			end_idx = video.size(0)
 
-		random_start_idx = torch.randint(start_idx, end_idx-self.n_frames, (1,)).item()
+		if self.mode == "test_full":
 
-		video = video[random_start_idx:(random_start_idx+self.n_frames),...]
+			input_batch = []
+			output_batch = []
 
-		if self.mode == "train":
-			video = augment_video(video)
+			video_chunks = [video[x:x+self.n_frames] for x in range(start_idx, end_idx, self.n_frames)]
 
-		video = video.squeeze(1).permute(1, 2, 0)
+			for sliced_video in video_chunks:
 
-		streaking_image = get_streaking_image(video.numpy(), mask=self.mask)
+				if sliced_video.size(0) < self.n_frames:
+					zero_complement = torch.zeros(self.n_frames - sliced_video.size(0), *sliced_video.size()[1:]).float().to(sliced_video.device)
+					sliced_video = torch.cat((sliced_video, zero_complement), 0)
 
-		streaking_image = torch.from_numpy(streaking_image).unsqueeze(0).float().contiguous()
-		video = video.unsqueeze(0).float().contiguous()
+				sliced_video = sliced_video.squeeze(1).permute(1, 2, 0)
+
+				sliced_streaking_image = get_streaking_image(sliced_video.numpy(), mask=self.mask)
+
+				sliced_streaking_image = torch.from_numpy(sliced_streaking_image).unsqueeze(0).float().contiguous()
+				sliced_video = sliced_video.unsqueeze(0).float().contiguous()
+
+				input_batch.append(sliced_streaking_image.unsqueeze(0))
+				output_batch.append(sliced_video.unsqueeze(0))
+
+			streaking_image = torch.cat(input_batch, 0)
+			video = torch.cat(output_batch, 0)
+
+		else:
+
+			random_start_idx = torch.randint(start_idx, end_idx-self.n_frames, (1,)).item()
+
+			video = video[random_start_idx:(random_start_idx+self.n_frames),...]
+
+			if self.mode == "train":
+				video = augment_video(video)
+
+			video = video.squeeze(1).permute(1, 2, 0)
+
+			streaking_image = get_streaking_image(video.numpy(), mask=self.mask)
+
+			streaking_image = torch.from_numpy(streaking_image).unsqueeze(0).float().contiguous()
+			video = video.unsqueeze(0).float().contiguous()
 
 		return streaking_image, video
 
 	def __len__(self):
-		return self.sample_size
+		if self.mode == "test_full":
+			return 1
+		else:
+			return self.sample_size
 
 
 class Loader_gen(Dataset):
@@ -141,11 +172,21 @@ if __name__ == "__main__":
 	dataset = Loader_gen(256, "~/Downloads/papers_video/", sample_size=10)
 
 	for i, el in enumerate(dataset):
-		print(f"{i}/{len(dataset)}", el.size())
+		print(f"{i+1}/{len(dataset)}", el.size())
+
 	"""
 
-	dataset = Loader(256, 30, "~/Downloads/papers_video/", "train", sample_size=10, mask_path="./mask.npy")
+	dataset = Loader(256, 30, "/Users/joaomonteirof/Downloads/papers_video/Filament", "train", sample_size=10, mask_path="./mask.npy")
+
+	print("\n\nTrain\n\n")
 
 	for i, el in enumerate(dataset):
-		print(f"{i}/{len(dataset)}", el[0].size(), el[1].size())
+		print(f"{i+1}/{len(dataset)}", el[0].size(), el[1].size())
+
+	print("\n\nTest (full)\n\n")
+
+	dataset = Loader(256, 30, "/Users/joaomonteirof/Downloads/papers_video/Filament", "test_full", sample_size=10, mask_path="./mask.npy")
+	
+	for i, el in enumerate(dataset):
+		print(f"{i+1}/{len(dataset)}", el[0].size(), el[1].size())
 
