@@ -79,6 +79,9 @@ class TrainLoop(object):
 			if self.cur_epoch % save_every == 0:
 				self.checkpointing()
 
+			if self.logger:
+				self.logger.add_scalar('Info/Epoch', self.cur_epoch, self.total_iters)
+
 		# saving final models
 		print('Saving final model...')
 		self.checkpointing()
