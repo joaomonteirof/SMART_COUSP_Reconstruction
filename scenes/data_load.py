@@ -33,8 +33,7 @@ def augment_video(vid_tensor):
 def augument_image(im_tensor):
 
 	im_tensor = torchvision.transforms.RandomHorizontalFlip(p=0.5)(im_tensor)
-	im_tensor = torchvision.transforms.RandomRotation(10)(im_tensor)
-	im_tensor = torchvision.transforms.RandomVerticalFlip(p=0.2)(im_tensor)
+	im_tensor = torchvision.transforms.RandomVerticalFlip(p=0.5)(im_tensor)
 
 	return im_tensor
 
