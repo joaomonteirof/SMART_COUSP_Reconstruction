@@ -85,6 +85,7 @@ class Loader(Dataset):
 
 			input_batch = []
 			output_batch = []
+			original_video_len = end_idx - start_idx
 
 			video_chunks = [video[x:x+self.n_frames] for x in range(start_idx, end_idx, self.n_frames)]
 
@@ -106,6 +107,8 @@ class Loader(Dataset):
 
 			streaking_image = torch.cat(input_batch, 0)
 			video = torch.cat(output_batch, 0)
+
+			return streaking_image, video, original_video_len
 
 		else:
 

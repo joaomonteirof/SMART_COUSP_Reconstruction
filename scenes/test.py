@@ -20,7 +20,7 @@ def test_model(model, generator, dataset, cuda_mode, enhancement):
 
 	with torch.no_grad():
 
-		sample_in, sample_out = dataset[0]
+		sample_in, sample_out, scene_depth = dataset[0]
 
 		if cuda_mode:
 			sample_in = sample_in.cuda()
@@ -30,9 +30,11 @@ def test_model(model, generator, dataset, cuda_mode, enhancement):
 		rec_frames_list = []
 		out_frames_list = []
 
-
 		for i in range(out.size(0)):
 			for j in range(out.size(1)):
+
+				if i == out.size(0) -1  and j > scene_depth:
+					break
 
 				gen_frame = generator(out[i,j,:].unsqueeze(0))
 				rec_frames_list.append(gen_frame.cpu().squeeze(0).detach())
@@ -42,8 +44,8 @@ def test_model(model, generator, dataset, cuda_mode, enhancement):
 		sample_rec = torch.cat(rec_frames_list, 0)
 		sample_out = torch.cat(out_frames_list, 0)
 
-		save_gif(sample_out, 'real.gif', enhance=False)
-		save_gif(sample_rec, 'rec.gif', enhance=enhancement)
+		# save_gif(sample_out, 'real.gif', enhance=False)
+		# save_gif(sample_rec, 'rec.gif', enhance=enhancement)
 
 def save_gif(data, file_name, enhance):
 
