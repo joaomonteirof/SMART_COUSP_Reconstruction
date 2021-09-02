@@ -23,7 +23,6 @@ parser.add_argument('--checkpoint-epoch', type=int, default=None, metavar='N', h
 parser.add_argument('--checkpoint-path', type=str, default=None, metavar='Path', help='Path for checkpointing')
 parser.add_argument('--generator-path', type=str, default=None, metavar='Path', help='Path for generator params')
 parser.add_argument('--pretrained-path', type=str, default=None, metavar='Path', help='Path to trained model. Discards output layer')
-parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
 parser.add_argument('--save-every', type=int, default=5, metavar='N', help='how many batches to wait before logging training status. (default: 5)')
 parser.add_argument('--n-workers', type=int, default=2)
 parser.add_argument('--logdir', type=str, default=None, metavar='Path', help='Path for checkpointing')
@@ -42,10 +41,6 @@ valid_data_set = Loader(args.im_size, args.n_frames, args.data_path, "test", sam
 
 train_loader = DataLoader(train_data_set, batch_size=args.batch_size, num_workers=args.n_workers)
 valid_loader = DataLoader(valid_data_set, batch_size=args.valid_batch_size, num_workers=args.n_workers)
-
-torch.manual_seed(args.seed)
-if args.cuda:
-    torch.cuda.manual_seed(args.seed)
 
 model = models_zoo.model_gen(n_frames=args.n_frames, cuda_mode=args.cuda)
 generator = Generator().eval()

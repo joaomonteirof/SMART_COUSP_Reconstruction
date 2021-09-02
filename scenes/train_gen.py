@@ -26,7 +26,6 @@ parser.add_argument('--ndiscriminators', type=int, default=8, help='Number of di
 parser.add_argument('--checkpoint-epoch', type=int, default=None, metavar='N', help='epoch to load for checkpointing. If None, training starts from scratch')
 parser.add_argument('--checkpoint-path', type=str, default=None, metavar='Path', help='Path for checkpointing')
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
-parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
 parser.add_argument('--save-every', type=int, default=5, metavar='N', help='how many epochs to wait before logging training status. Default is 5')
 parser.add_argument('--train-mode', choices=['vanilla', 'hyper', 'gman', 'gman_grad', 'loss_delta', 'mgd'], default='vanilla', help='Salect train mode. Default is vanilla (simple average of Ds losses)')
 parser.add_argument('--nadir-slack', type=float, default=1.5, metavar='nadir', help='factor for nadir-point update. Only used in hyper mode (default: 1.5)')
@@ -41,10 +40,6 @@ parser.add_argument('--data-path', type=str, default="./", metavar='Path', help=
 parser.add_argument('--n-examples', type=int, default=50000, metavar='N', help='Number of training examples (default: 50000)')
 args = parser.parse_args()
 args.cuda = True if not args.no_cuda and torch.cuda.is_available() else False
-
-torch.manual_seed(args.seed)
-if args.cuda:
-	torch.cuda.manual_seed(args.seed)
 
 trainset = Loader_gen(im_size=args.im_size, data_path=args.data_path, sample_size=args.n_examples)
 
