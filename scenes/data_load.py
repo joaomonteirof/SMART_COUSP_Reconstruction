@@ -24,13 +24,13 @@ def prep_video(data, im_size):
 
 def augment_video(vid_tensor):
 
-	vid_tensor = augument_image(vid_tensor)
+	vid_tensor = augment_image(vid_tensor)
 	if torch.rand(1).item() > 0.5:
 		vid_tensor = torch.flip(vid_tensor, (0,))
 
 	return vid_tensor
 
-def augument_image(im_tensor):
+def augment_image(im_tensor):
 
 	im_tensor = torchvision.transforms.RandomHorizontalFlip(p=0.5)(im_tensor)
 	im_tensor = torchvision.transforms.RandomVerticalFlip(p=0.5)(im_tensor)
@@ -161,7 +161,7 @@ class Loader_gen(Dataset):
 		video = self.data[random_video_idx]
 		random_frame_idx = torch.randint(0, video.size(0), (1,)).item()
 
-		x = augument_image(video[random_frame_idx])
+		x = augment_image(video[random_frame_idx])
 
 		return x
 
