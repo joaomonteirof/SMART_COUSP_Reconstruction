@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 class TrainLoop(object):
 
-	def __init__(self, model, generator, optimizer, scheduler, train_loader, valid_loader, max_gnorm=10.0, checkpoint_path=None, checkpoint_epoch=None, cuda=True, logger=None):
+	def __init__(self, model, generator, optimizer, train_loader, valid_loader, max_gnorm=10.0, checkpoint_path=None, checkpoint_epoch=None, cuda=True, logger=None):
 		if checkpoint_path is None:
 			# Save to current directory
 			self.checkpoint_path = os.getcwd()
@@ -25,7 +25,6 @@ class TrainLoop(object):
 		self.model = model
 		self.generator = generator
 		self.optimizer = optimizer
-		self.scheduler = scheduler
 		self.train_loader = train_loader
 		self.valid_loader = valid_loader
 		self.max_gnorm = max_gnorm
@@ -94,8 +93,6 @@ class TrainLoop(object):
 				if self.cur_epoch % save_every == 0:
 					self.checkpointing()
 
-			self.scheduler.step()
-
 		# saving final models
 		print('Saving final model...')
 		self.checkpointing()
@@ -163,7 +160,6 @@ class TrainLoop(object):
 		print('Checkpointing...')
 		ckpt = {'model_state': self.model.state_dict(),
 		'optimizer_state': self.optimizer.state_dict(),
-		'scheduler_state': self.scheduler.state_dict(),
 		'history': self.history,
 		'total_iters': self.total_iters,
 		'cur_epoch': self.cur_epoch,
@@ -180,8 +176,6 @@ class TrainLoop(object):
 			self.model.load_state_dict(ckpt['model_state'])
 			# Load optimizer state
 			self.optimizer.load_state_dict(ckpt['optimizer_state'])
-			# Load scheduler state
-			self.scheduler.load_state_dict(ckpt['scheduler_state'])
 			# Load history
 			self.history = ckpt['history']
 			self.total_iters = ckpt['total_iters']
