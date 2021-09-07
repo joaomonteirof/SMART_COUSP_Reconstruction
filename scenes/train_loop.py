@@ -38,8 +38,6 @@ class TrainLoop(object):
 
 		if checkpoint_epoch is not None:
 			self.load_checkpoint(self.save_epoch_fmt.format(checkpoint_epoch))
-		else:
-			self.initialize_params()
 
 	def train(self, n_epochs=1, save_every=10):
 
@@ -190,24 +188,3 @@ class TrainLoop(object):
 
 		else:
 			print('No checkpoint found at: {}'.format(ckpt))
-
-	def print_params_norms(self):
-		norm = 0.0
-		for params in list(self.model.parameters()):
-			norm+=params.norm(2).item()
-		print('Sum of weights norms: {}'.format(norm))
-
-
-	def print_grad_norms(self):
-		norm = 0.0
-		for params in list(self.model.parameters()):
-			norm+=params.grad.norm(2).item()
-		print('Sum of grads norms: {}'.format(norm))
-
-	def initialize_params(self):
-		for layer in self.model.modules():
-			if isinstance(layer, torch.nn.Conv2d):
-				init.kaiming_normal_(layer.weight.data)
-			elif isinstance(layer, torch.nn.BatchNorm2d):
-				layer.weight.data.fill_(1)
-				layer.bias.data.zero_()
