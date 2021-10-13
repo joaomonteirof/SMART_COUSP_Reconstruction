@@ -22,6 +22,8 @@ def test_model(model, generator, dataset, cuda_mode, enhancement):
 
 		sample_in, sample_out, scene_depth = dataset[0]
 
+		to_pil(sample_in[0]).save('streaking.png')
+
 		if cuda_mode:
 			sample_in = sample_in.cuda()
 
@@ -44,8 +46,8 @@ def test_model(model, generator, dataset, cuda_mode, enhancement):
 		sample_rec = torch.cat(rec_frames_list, 0)
 		sample_out = torch.cat(out_frames_list, 0)
 
-		# save_gif(sample_out, 'real.gif', enhance=False)
-		# save_gif(sample_rec, 'rec.gif', enhance=enhancement)
+		save_gif(sample_out, 'real.gif', enhance=False)
+		save_gif(sample_rec, 'rec.gif', enhance=enhancement)
 
 def save_gif(data, file_name, enhance):
 
